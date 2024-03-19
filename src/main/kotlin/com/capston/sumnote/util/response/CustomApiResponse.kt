@@ -1,6 +1,6 @@
 package com.capston.sumnote.util.response
 
-class CustomApiResponse<T> private constructor(
+class CustomApiResponse<T>(
     val status: Int,
     val data: T?,
     val message: String?

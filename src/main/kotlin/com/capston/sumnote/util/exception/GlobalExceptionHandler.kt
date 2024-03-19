@@ -5,11 +5,10 @@ import com.capston.sumnote.util.response.CustomApiResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
-import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.context.support.DefaultMessageSourceResolvable
+import org.springframework.web.bind.annotation.RestControllerAdvice
 
-@ControllerAdvice
+@RestControllerAdvice
 class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -48,6 +47,12 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
             .body(CustomApiResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), message))
+    }
+
+    @ExceptionHandler(CustomValidationException::class)
+    fun handleCustomValidationException(e: CustomValidationException): ResponseEntity<CustomApiResponse<*>> {
+        val response = CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), e.message ?: "유효하지 않은 요청입니다.")
+        return ResponseEntity(response, HttpStatus.BAD_REQUEST)
     }
 
 }

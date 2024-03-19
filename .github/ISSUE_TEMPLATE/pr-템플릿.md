@@ -1,7 +1,7 @@
 ---
 name: PR 템플릿
 about: PR 시 이 템플릿을 사용하세요.
-title: "[FEAT] 회원 API 개발"
+title: "✨ 회원 API 개발"
 labels: enhancement
 assignees: ''
 

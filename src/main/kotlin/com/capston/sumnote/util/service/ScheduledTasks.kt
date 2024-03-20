@@ -14,7 +14,7 @@ class ScheduledTasks(private val memberRepository: MemberRepository) {
         memberRepository.findAll().forEach { member ->
             if (member.lastLoginAt?.isBefore(twoWeeksAgo) == true) {
                 // 사용자 비활성화, 즉 자동 로그아웃
-                member.isActive = false
+                member.isAutoLoginActive = false
                 memberRepository.save(member)
             }
         }

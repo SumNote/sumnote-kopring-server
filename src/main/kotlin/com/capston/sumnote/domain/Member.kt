@@ -25,6 +25,6 @@ class Member(
     @Column(name = "last_login_at")
     var lastLoginAt: LocalDateTime? = null,
 
-    @Column(name = "is_active")
-    var isActive: Boolean = true
+    @Column(name = "is_auto_login_active")
+    var isAutoLoginActive: Boolean = true
 ) : BaseEntity()

@@ -5,6 +5,7 @@ import com.capston.sumnote.member.dto.LoginDto
 import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.util.exception.CustomValidationException
 import com.capston.sumnote.util.exception.EntityDuplicatedException
+import com.capston.sumnote.util.exception.AutoLoginDeactivateException
 import com.capston.sumnote.util.response.CustomApiResponse
 import com.capston.sumnote.util.valid.CustomValid
 import org.springframework.stereotype.Service
@@ -30,7 +31,7 @@ class MemberServiceImpl(private val memberRepository: MemberRepository) : Member
 
             // 계정이 비활성화된 경우 예외 발생
             if (!member.isAutoLoginActive) {
-                throw CustomValidationException("자동 로그아웃 되었습니다. 다시 로그인 해주세요.")
+                throw AutoLoginDeactivateException("자동 로그아웃 되었습니다. 다시 로그인 해주세요.")
             }
 
             // 사용자의 마지막 로그인 시간 업데이트

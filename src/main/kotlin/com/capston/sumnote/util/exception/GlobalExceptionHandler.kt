@@ -57,8 +57,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(AutoLoginDeactivateException::class)
     fun handleMemberDeactivateException(e: AutoLoginDeactivateException): ResponseEntity<CustomApiResponse<*>> {
-        val response = CustomApiResponse.createFailWithoutData(HttpStatus.UNAUTHORIZED.value(), e.message ?: "자동 로그아웃 되었습니다. 다시 로그인 해주세요.")
-        return ResponseEntity(response, HttpStatus.UNAUTHORIZED)
+        val response = CustomApiResponse.createFailWithoutData(HttpStatus.REQUEST_TIMEOUT.value(), e.message ?: "자동 로그아웃 되었습니다. 다시 로그인 해주세요.")
+        return ResponseEntity(response, HttpStatus.REQUEST_TIMEOUT)
     }
 
 }

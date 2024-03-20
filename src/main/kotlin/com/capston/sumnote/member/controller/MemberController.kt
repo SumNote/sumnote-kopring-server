@@ -15,6 +15,11 @@ class MemberController(private val memberService: MemberServiceImpl) {
         return memberService.login(dto)
     }
 
+    @PostMapping("/re-login")
+    fun reLogin(@Valid @RequestBody dto: LoginDto.Req) : CustomApiResponse<LoginDto.Res> {
+        return memberService.reLogin(dto)
+    }
+
     @DeleteMapping("/withdraw/{email}")
     fun withdraw(@PathVariable("email") email: String): CustomApiResponse<*> {
         return memberService.withdraw(email)

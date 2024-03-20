@@ -55,4 +55,10 @@ class GlobalExceptionHandler {
         return ResponseEntity(response, HttpStatus.BAD_REQUEST)
     }
 
+    @ExceptionHandler(MemberDeactivateException::class)
+    fun handleMemberDeactivateException(e: MemberDeactivateException): ResponseEntity<CustomApiResponse<*>> {
+        val response = CustomApiResponse.createFailWithoutData(HttpStatus.UNAUTHORIZED.value(), e.message ?: "자동 로그아웃 됩니다.")
+        return ResponseEntity(response, HttpStatus.UNAUTHORIZED)
+    }
+
 }

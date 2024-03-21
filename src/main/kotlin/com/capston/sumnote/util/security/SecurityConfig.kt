@@ -15,10 +15,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(private val jwtTokenProvider: JwtTokenProvider) {
+class SecurityConfig(
+        private val jwtTokenProvider: JwtTokenProvider,
+        private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint
+    ) {
 
     @Bean
-    open fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http {
             csrf { disable() }
             sessionManagement {
@@ -33,6 +36,9 @@ class SecurityConfig(private val jwtTokenProvider: JwtTokenProvider) {
             formLogin { disable() } // 폼 로그인 비활성화 (JWT 사용 시 일반적으로 비활성화)
             // JwtTokenFilter 추가
             addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtTokenFilter(jwtTokenProvider))
+            exceptionHandling {
+                authenticationEntryPoint = customAuthenticationEntryPoint // 응답 401 내려주기 등록
+            }
         }
         return http.build()
     }

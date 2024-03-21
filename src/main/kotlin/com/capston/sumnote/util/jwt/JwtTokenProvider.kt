@@ -17,6 +17,7 @@ class JwtTokenProvider : Serializable {
     private lateinit var secretKey: String
 
     private lateinit var key: Key
+//    private val validityInMilliseconds: Long = 1000 * 60 // TEST: 60초
     private val validityInMilliseconds: Long = 1000 * 60 * 60 * 24 * 14 // 토큰 유효기간 2주
 
     @PostConstruct

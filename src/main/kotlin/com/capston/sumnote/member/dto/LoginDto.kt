@@ -22,7 +22,7 @@ class LoginDto {
         }
     }
 
-    data class Res(val email: String, val name: String) {
-        constructor(member: Member) : this(email = member.email.toString(), name = member.name.toString())
+    data class Res(val email: String, val name: String, val token: String) {
+        constructor(member: Member, token: String) : this(email = member.email.toString(), name = member.name.toString(), token = token)
     }
 }

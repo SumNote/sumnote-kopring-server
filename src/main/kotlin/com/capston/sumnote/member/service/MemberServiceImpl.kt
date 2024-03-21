@@ -5,7 +5,7 @@ import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.util.exception.CustomValidationException
 import com.capston.sumnote.util.exception.EntityDuplicatedException
 import com.capston.sumnote.util.exception.AutoLoginDeactivateException
-import com.capston.sumnote.util.jwt.JwtTokenProvider
+import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import com.capston.sumnote.util.response.CustomApiResponse
 import com.capston.sumnote.util.valid.CustomValid
 import org.springframework.stereotype.Service

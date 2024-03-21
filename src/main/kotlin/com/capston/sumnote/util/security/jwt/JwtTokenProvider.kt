@@ -1,4 +1,4 @@
-package com.capston.sumnote.util.jwt
+package com.capston.sumnote.util.security.jwt
 
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm

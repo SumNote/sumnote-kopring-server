@@ -3,12 +3,17 @@ package com.capston.sumnote.util.jwt
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import jakarta.annotation.PostConstruct
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Component
 import java.io.Serializable
 import java.security.Key
 import java.util.*
 import javax.crypto.spec.SecretKeySpec
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.User
 
 @Component
 class JwtTokenProvider : Serializable {
@@ -41,5 +46,31 @@ class JwtTokenProvider : Serializable {
             .setExpiration(validity) // 만료 시간
             .signWith(key, SignatureAlgorithm.HS256) // HS256 알고리즘 이용
             .compact() // 토큰 생성
+    }
+
+
+    fun resolveToken(req: HttpServletRequest): String? {
+        val bearerToken = req.getHeader("Authorization")
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7)
+        }
+        return null
+    }
+
+    fun validateToken(token: String): Boolean {
+        try {
+            val claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+            return !claims.body.expiration.before(Date())
+        } catch (e: Exception) {
+            // 로그로 예외 처리
+            return false
+        }
+    }
+
+    fun getAuthentication(token: String): Authentication {
+        // 모든 사용자에게 'ROLE_USER' 권한을 부여
+        // 실제 애플리케이션에서는 토큰 또는 데이터베이스에서 사용자의 역할을 조회하여 설정
+        val userDetails = User(Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).body.subject, "", listOf(SimpleGrantedAuthority("ROLE_USER")))
+        return UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
     }
 }

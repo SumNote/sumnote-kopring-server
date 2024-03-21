@@ -5,6 +5,7 @@ import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.util.exception.CustomValidationException
 import com.capston.sumnote.util.exception.EntityDuplicatedException
 import com.capston.sumnote.util.exception.AutoLoginDeactivateException
+import com.capston.sumnote.util.jwt.JwtTokenProvider
 import com.capston.sumnote.util.response.CustomApiResponse
 import com.capston.sumnote.util.valid.CustomValid
 import org.springframework.stereotype.Service
@@ -14,7 +15,10 @@ import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
-class MemberServiceImpl(private val memberRepository: MemberRepository) : MemberService {
+class MemberServiceImpl(
+    private val memberRepository: MemberRepository,
+    private val jwtTokenProvider: JwtTokenProvider
+) : MemberService {
 
     // 로그인
     @Transactional
@@ -36,7 +40,7 @@ class MemberServiceImpl(private val memberRepository: MemberRepository) : Member
                 isAutoLoginActive = true
             }
             memberRepository.save(newMember)
-            newMember
+            return@orElseGet newMember
         }
 
         // login 으로 요청이 온 경우
@@ -44,17 +48,22 @@ class MemberServiceImpl(private val memberRepository: MemberRepository) : Member
             throw AutoLoginDeactivateException("자동 로그아웃 되었습니다. 다시 로그인 해주세요.")
         }
 
-        // re-login 으로 요청이 온 경우
-        member.apply {
-            lastLoginAt = LocalDateTime.now()
-            if (!isAutoLoginActive) {
-                isAutoLoginActive = true // 비활성화된 계정 재활성화
+        // re-login 으로 요청이 온 경우, 자동 로그인 비활성화 상태인 계정을 재활성화
+        if (!member.isAutoLoginActive) {
+            member.apply {
+                lastLoginAt = LocalDateTime.now()
+                isAutoLoginActive = true
             }
-        }.also {
-            memberRepository.save(it)
+            memberRepository.save(member)
         }
 
-        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), LoginDto.Res(member), if (allowReactivation) "재로그인 성공" else "로그인 성공")
+        // JWT 토큰 생성
+        val token = jwtTokenProvider.createToken(member.email.toString(), listOf("ROLE_USER")) // 역할은 예시입니다.
+
+        // 로그인 응답에 토큰 포함하여 반환
+        val response = LoginDto.Res(member.email.toString(), member.name.toString(), token) // 수정된 생성자를 사용
+        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), response, if (allowReactivation) "재로그인 성공" else "로그인 성공")
+
     }
 
     @Transactional

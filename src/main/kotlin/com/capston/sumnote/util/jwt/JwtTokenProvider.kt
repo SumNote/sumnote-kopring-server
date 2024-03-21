@@ -2,18 +2,27 @@ package com.capston.sumnote.util.jwt
 
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import jakarta.annotation.PostConstruct
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import java.io.Serializable
 import java.security.Key
 import java.util.*
 import javax.crypto.spec.SecretKeySpec
 
-class JwtTokenProvider(secretKey: String) {
+@Component
+class JwtTokenProvider : Serializable {
 
-    private val key: Key
+    @Value("\${jwt.secret-key}")
+    private lateinit var secretKey: String
+
+    private lateinit var key: Key
     private val validityInMilliseconds: Long = 1000 * 60 * 60 * 24 * 14 // 토큰 유효기간 2주
 
-    init {
-        val decodedKey = Base64.getDecoder().decode(secretKey) // 생성자에서 제공된 secretKey 를 Base64로 디코딩
-        this.key = SecretKeySpec(decodedKey, 0, decodedKey.size, "HmacSHA256") // 디코딩 된 키로 SecretKeySpec 객체 생성
+    @PostConstruct
+    fun init() {
+        val decodedKey = Base64.getDecoder().decode(secretKey)
+        this.key = SecretKeySpec(decodedKey, 0, decodedKey.size, "HmacSHA256")
     }
 
     fun createToken(email: String, roles: List<String>) : String {

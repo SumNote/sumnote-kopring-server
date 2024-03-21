@@ -5,6 +5,7 @@ import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.util.exception.CustomValidationException
 import com.capston.sumnote.util.exception.EntityDuplicatedException
 import com.capston.sumnote.util.exception.AutoLoginDeactivateException
+import com.capston.sumnote.util.jwt.JwtTokenProvider
 import com.capston.sumnote.util.response.CustomApiResponse
 import com.capston.sumnote.util.valid.CustomValid
 import org.springframework.stereotype.Service
@@ -14,7 +15,10 @@ import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
-class MemberServiceImpl(private val memberRepository: MemberRepository) : MemberService {
+class MemberServiceImpl(
+    private val memberRepository: MemberRepository,
+    private val jwtTokenProvider: JwtTokenProvider
+) : MemberService {
 
     // 로그인
     @Transactional

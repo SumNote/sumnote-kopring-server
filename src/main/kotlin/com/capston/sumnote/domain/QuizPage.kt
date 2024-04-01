@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import lombok.Getter
 
 @Entity
-@Table(name = "quiz_page")
+@Table(name = "QUIZ_PAGES")
 class QuizPage (
 
     @Id

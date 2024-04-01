@@ -4,7 +4,7 @@ import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "NOTES")
+@Table(name = "NOTE_DOCS")
 class Note (
 
     @Id

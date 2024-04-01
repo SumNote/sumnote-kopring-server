@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 
 
 @Entity
-@Table(name = "quiz_doc")
+@Table(name = "QUIZ_DOCS")
 class Quiz (
     @Id
     @GeneratedValue

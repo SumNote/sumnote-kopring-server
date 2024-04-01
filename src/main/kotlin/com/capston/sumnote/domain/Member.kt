@@ -1,11 +1,7 @@
 package com.capston.sumnote.domain
 
 import com.capston.sumnote.util.entity.BaseEntity
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
@@ -26,5 +22,9 @@ class Member(
     var lastLoginAt: LocalDateTime? = null,
 
     @Column(name = "is_auto_login_active")
-    var isAutoLoginActive: Boolean = true
+    var isAutoLoginActive: Boolean = true,
+
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var notes: MutableList<Note> = mutableListOf()
+
 ) : BaseEntity()

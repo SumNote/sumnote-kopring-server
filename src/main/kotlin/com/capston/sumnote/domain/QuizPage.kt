@@ -1,5 +1,6 @@
 package com.capston.sumnote.domain
 
+import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
 import lombok.Getter
 
@@ -24,4 +25,5 @@ class QuizPage (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id")
     var quiz : Quiz
-)
+
+) : BaseEntity()

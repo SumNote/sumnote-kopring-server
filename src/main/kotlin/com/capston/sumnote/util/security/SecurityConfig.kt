@@ -29,7 +29,6 @@ class SecurityConfig(
             }
             authorizeHttpRequests {
                 authorize("/api/member/login", permitAll) // 로그인 경로는 누구나 접근 가능
-                authorize("/api/member/re-login", permitAll) // 재로그인 경로도 누구나 접근 가능
                 authorize(anyRequest, authenticated) // 그 외 모든 요청은 인증 필요
             }
             httpBasic {} // HTTP 기본 인증 활성화 (필요한 경우)

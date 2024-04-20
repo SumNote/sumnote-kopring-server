@@ -10,6 +10,10 @@ class CustomApiResponse<T>(
             return CustomApiResponse(status, data, message)
         }
 
+        fun <T> createSuccessWithoutData(status: Int, message: String): CustomApiResponse<T> {
+            return CustomApiResponse(status, null, message)
+        }
+
         fun createFailWithoutData(status: Int, message: String): CustomApiResponse<Nothing> {
             return CustomApiResponse(status, null, message)
         }

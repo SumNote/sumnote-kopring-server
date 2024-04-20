@@ -18,9 +18,6 @@ class Member(
     @Column(name = "member_name")
     var name: String? = null,
 
-    @Column(name = "last_login_at")
-    var lastLoginAt: LocalDateTime? = null,
-
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var notes: MutableList<Note> = mutableListOf()
 

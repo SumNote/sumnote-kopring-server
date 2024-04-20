@@ -17,20 +17,20 @@ class MemberServiceImpl(
     private val jwtTokenProvider: JwtTokenProvider
 ) : MemberService {
 
-        // 로그인
-        @Transactional
-        override fun login(dto: LoginDto.Req): Pair<LoginDto.Res, String> {
-            val member = memberRepository.findByEmail(dto.email).orElseGet {
-                memberRepository.save(dto.toEntity()) // 사용자 정보가 없으면 회원가입 진행
-            }
-
-            // JWT 토큰 생성
-            val token = jwtTokenProvider.createToken(member.email.toString(), listOf("ROLE_USER"))
-
-            // 로그인 응답 준비 (토큰 제외)
-            val response = LoginDto.Res(member.email.toString(), member.name.toString())
-            return Pair(response, token)
+    // 로그인
+    @Transactional
+    override fun login(dto: LoginDto.Req): Pair<LoginDto.Res, String> {
+        val member = memberRepository.findByEmail(dto.email).orElseGet {
+            memberRepository.save(dto.toEntity()) // 사용자 정보가 없으면 회원가입 진행
         }
+
+        // JWT 토큰 생성
+        val token = jwtTokenProvider.createToken(member.email.toString(), listOf("ROLE_USER"))
+
+        // 로그인 응답 준비 (토큰 제외)
+        val response = LoginDto.Res(member.email.toString(), member.name.toString())
+        return Pair(response, token)
+    }
 
     @Transactional
     override fun withdraw(email: String): CustomApiResponse<*> {
@@ -50,4 +50,3 @@ class MemberServiceImpl(
     }
 
 }
-

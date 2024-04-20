@@ -1,37 +1,29 @@
-package com.capston.sumnote.note.controller
-
 import com.capston.sumnote.member.service.NoteService
 import com.capston.sumnote.note.dto.CreateNoteDto
 import com.capston.sumnote.util.response.CustomApiResponse
-import com.capston.sumnote.util.security.jwt.JwtTokenProvider
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/sum-note")
 class NoteController(
-    private val noteService: NoteService,
-    private val jwtTokenProvider: JwtTokenProvider
+    private val noteService: NoteService
 ) {
 
     @PostMapping
-    fun createNote(@RequestBody dto: CreateNoteDto, request: HttpServletRequest): ResponseEntity<CustomApiResponse<*>> {
+    fun createNote(@RequestBody dto: CreateNoteDto): ResponseEntity<CustomApiResponse<*>> {
 
-        val token = jwtTokenProvider.resolveToken(request)
-        if (token == null || !jwtTokenProvider.validateToken(token)) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(CustomApiResponse.createFailWithoutData(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."))
-        }
+        // 헤더에 포함된 토큰으로 이메일 값 가져오기
+        val authentication = SecurityContextHolder.getContext().authentication
+        val email = authentication.principal as String
 
-        val email = jwtTokenProvider.getEmailFromToken(token)
-            ?: return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "토큰을 통해 이메일을 찾을 수 없습니다."))
-
-        val response = noteService.createNote(dto, email) // 응답 데이터
-        return ResponseEntity.status(HttpStatus.CREATED).body(response) // 상태 코드 변경
+        // 응답
+        val response = noteService.createNote(dto, email)
+        return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 }

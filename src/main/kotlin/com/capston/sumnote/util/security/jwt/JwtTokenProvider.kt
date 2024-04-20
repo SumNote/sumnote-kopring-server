@@ -67,6 +67,16 @@ class JwtTokenProvider : Serializable {
         }
     }
 
+    // 이메일 추출
+    fun getEmailFromToken(token: String): String? {
+        return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .body
+            .subject
+    }
+
     fun getAuthentication(token: String): Authentication {
         // 모든 사용자에게 'ROLE_USER' 권한을 부여
         // 실제 애플리케이션에서는 토큰 또는 데이터베이스에서 사용자의 역할을 조회하여 설정

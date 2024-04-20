@@ -1,7 +1,7 @@
 package com.capston.sumnote.util.security
 
+import JwtTokenFilter
 import org.springframework.security.config.annotation.web.invoke
-import com.capston.sumnote.util.security.jwt.JwtTokenFilter
 import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

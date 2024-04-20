@@ -11,23 +11,27 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/sum-note")
-class NoteController (
+class NoteController(
     private val noteService: NoteService,
     private val jwtTokenProvider: JwtTokenProvider
 ) {
 
     @PostMapping
-    fun createNote(@RequestBody dto: CreateNoteDto, request: HttpServletRequest): CustomApiResponse<*> {
+    fun createNote(@RequestBody dto: CreateNoteDto, request: HttpServletRequest): ResponseEntity<CustomApiResponse<*>> {
 
         val token = jwtTokenProvider.resolveToken(request)
         if (token == null || !jwtTokenProvider.validateToken(token)) {
-            return CustomApiResponse.createFailWithoutData(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다.")
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(CustomApiResponse.createFailWithoutData(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."))
         }
 
         val email = jwtTokenProvider.getEmailFromToken(token)
-            ?: return CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "토큰을 통해 이메일을 찾을 수 없습니다.")
+            ?: return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "토큰을 통해 이메일을 찾을 수 없습니다."))
 
-        return noteService.createNote(dto, email)
+        val response = noteService.createNote(dto, email) // 응답 데이터
+        return ResponseEntity.status(HttpStatus.CREATED).body(response) // 상태 코드 변경
     }
-
 }

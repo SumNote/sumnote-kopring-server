@@ -12,7 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.stereotype.Component
 
+@Component
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
@@ -24,12 +26,13 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http {
             csrf { disable() }
+            cors { disable() }
             sessionManagement {
                 sessionCreationPolicy = SessionCreationPolicy.STATELESS
             }
             authorizeHttpRequests {
                 authorize("/api/member/login", permitAll) // 로그인 경로는 누구나 접근 가능
-                authorize(anyRequest, authenticated) // 그 외 모든 요청은 인증 필요
+                authorize(anyRequest, authenticated)
             }
             httpBasic {} // HTTP 기본 인증 활성화 (필요한 경우)
             formLogin { disable() } // 폼 로그인 비활성화 (JWT 사용 시 일반적으로 비활성화)

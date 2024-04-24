@@ -7,4 +7,5 @@ interface NoteService {
     fun createNote(dto: CreateNoteDto, email: String): CustomApiResponse<*>
     fun findRecentNotesLimited(email: String): CustomApiResponse<*>
     fun findAllNotesSorted(email: String): CustomApiResponse<*>
+    fun getNote(noteId: Long): CustomApiResponse<*>
 }

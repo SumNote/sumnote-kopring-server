@@ -5,7 +5,6 @@ import com.capston.sumnote.util.response.CustomApiResponse
 
 interface NoteService {
     fun createNote(dto: CreateNoteDto, email: String): CustomApiResponse<*>
-    fun findRecentNotesLimited(email: String): CustomApiResponse<*>
-    fun findAllNotesSorted(email: String): CustomApiResponse<*>
-    fun getNote(noteId: Long): CustomApiResponse<*>
+    fun findNotesByType(email: String, type: String): CustomApiResponse<*>
+    fun getNote(email: String, noteId: Long): CustomApiResponse<*>
 }

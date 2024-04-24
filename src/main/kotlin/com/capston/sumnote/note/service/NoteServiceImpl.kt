@@ -3,8 +3,7 @@ package com.capston.sumnote.note.service
 import com.capston.sumnote.domain.Note
 import com.capston.sumnote.domain.NotePage
 import com.capston.sumnote.member.repository.MemberRepository
-import com.capston.sumnote.note.dto.CreateNoteDto
-import com.capston.sumnote.note.dto.GetNotesDto
+import com.capston.sumnote.note.dto.*
 import com.capston.sumnote.note.repository.NoteRepository
 import com.capston.sumnote.note.repository.NotePageRepository
 import com.capston.sumnote.util.response.CustomApiResponse
@@ -53,6 +52,29 @@ class NoteServiceImpl(
     override fun findAllNotesSorted(email: String): CustomApiResponse<List<GetNotesDto>> {
         val notes = noteRepository.findAllByMemberEmailOrderByLastModifiedAtDesc(email)
         return CustomApiResponse.createSuccess(HttpStatus.OK.value(), notes, "모든 노트 조회에 성공하였습니다.")
+    }
+
+    override fun getNote(noteId: Long): CustomApiResponse<*> {
+
+        // 노트 찾기 + 예외 처리
+        val note = noteRepository.findById(noteId).orElse(null)
+            ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "id가 " + noteId + "인 노트는 존재하지 않습니다.")
+
+        // 응답 데이터 만들기
+        val noteDetail = NoteDetail(noteId = note.id!!, title = note.title!!)
+        val notePagesDetails = note.notePages.map {
+            NotePageDetail(
+                notePageId = it.id!!,
+                title = it.title!!,
+                content = it.content!!,
+                isQuizExist = it.isQuizExists ?: false
+            )
+        }
+
+        val getNoteDto = GetNoteDto(note = noteDetail, notePages = notePagesDetails)
+
+        // 응답
+        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), getNoteDto, "노트 조회에 성공하였습니다.")
     }
 
 

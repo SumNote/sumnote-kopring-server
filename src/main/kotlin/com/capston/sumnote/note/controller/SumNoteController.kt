@@ -54,20 +54,20 @@ class SumNoteController(private val noteService: NoteService) {
         }
     }
 
-//    @GetMapping
-//    fun getNote(@RequestParam noteId: Long): ResponseEntity<CustomApiResponse<*>> {
-//
-//        // 헤더에 포함된 토큰으로 이메일 값 가져오기
-//        val authentication = SecurityContextHolder.getContext().authentication
-//        val principal = authentication.principal
-//        val email = if (principal is User) {
-//            principal.username
-//        } else {
-//            principal.toString()
-//        }
-//
-//        // 응답
-//        val response = noteService.getNote(noteId)
-//        return ResponseEntity.status(HttpStatus.OK).body(CustomApiResponse.createSuccess(200, response, "노트 조회에 성공했습니다."))
-//    }
+    @GetMapping ("note")
+    fun getNote(@RequestParam noteId: Long): ResponseEntity<CustomApiResponse<*>> {
+
+        // 헤더에 포함된 토큰으로 이메일 값 가져오기
+        val authentication = SecurityContextHolder.getContext().authentication
+        val principal = authentication.principal
+        val email = if (principal is User) {
+            principal.username
+        } else {
+            principal.toString()
+        }
+
+        // 응답
+        val response = noteService.getNote(noteId)
+        return ResponseEntity.status(HttpStatus.OK).body(response)
+    }
 }

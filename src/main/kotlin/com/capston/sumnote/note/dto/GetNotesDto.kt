@@ -1,10 +1,14 @@
 package com.capston.sumnote.note.dto
 
 import java.time.LocalDateTime
+import com.capston.sumnote.util.response.DateFormatter
 
 class GetNotesDto(
-    val id:Long,
+    val noteId: Long,
     val title: String,
-    val createdAt: LocalDateTime,
-    val lastModifiedAt: LocalDateTime
-)
+    createdAt: LocalDateTime,
+    lastModifiedAt: LocalDateTime
+) {
+    val createdAt: String = DateFormatter.formatDateTime(createdAt)
+    val lastModifiedAt: String = DateFormatter.formatDateTime(lastModifiedAt)
+}

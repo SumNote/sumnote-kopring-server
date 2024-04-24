@@ -58,15 +58,6 @@ class SumNoteController(private val noteService: NoteService) {
     @GetMapping ("{noteId}")
     fun getNote(@PathVariable("noteId") noteId: Long): ResponseEntity<CustomApiResponse<*>> {
 
-        // 헤더에 포함된 토큰으로 이메일 값 가져오기
-        val authentication = SecurityContextHolder.getContext().authentication
-        val principal = authentication.principal
-        val email = if (principal is User) {
-            principal.username
-        } else {
-            principal.toString()
-        }
-
         // 응답
         val response = noteService.getNote(noteId)
         return ResponseEntity.status(HttpStatus.OK).body(response)

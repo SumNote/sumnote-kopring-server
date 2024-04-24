@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -36,7 +37,7 @@ class SumNoteController(private val noteService: NoteService) {
     }
 
     @GetMapping
-    fun getNotes(@RequestParam type: String): ResponseEntity<CustomApiResponse<*>> {
+    fun getNotes(@RequestParam("type") type: String): ResponseEntity<CustomApiResponse<*>> {
 
         // 헤더에 포함된 토큰으로 이메일 값 가져오기
         val authentication = SecurityContextHolder.getContext().authentication
@@ -54,8 +55,8 @@ class SumNoteController(private val noteService: NoteService) {
         }
     }
 
-    @GetMapping ("note")
-    fun getNote(@RequestParam noteId: Long): ResponseEntity<CustomApiResponse<*>> {
+    @GetMapping ("{noteId}")
+    fun getNote(@PathVariable("noteId") noteId: Long): ResponseEntity<CustomApiResponse<*>> {
 
         // 헤더에 포함된 토큰으로 이메일 값 가져오기
         val authentication = SecurityContextHolder.getContext().authentication

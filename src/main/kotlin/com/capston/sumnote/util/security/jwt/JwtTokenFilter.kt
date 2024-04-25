@@ -19,11 +19,14 @@ class JwtTokenFilter(private val jwtTokenProvider: JwtTokenProvider) : GenericFi
         val request = req as HttpServletRequest
         val response = res as HttpServletResponse
         val token = jwtTokenProvider.resolveToken(request)
+        val requestURI = request.requestURI
 
         try {
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 val auth = jwtTokenProvider.getAuthentication(token)
                 SecurityContextHolder.getContext().authentication = auth
+            } else if (requestURI == "/api/member/login") {
+                // 그대로 요청 진행
             } else {
                 unauthorizedResponse(response)
                 return

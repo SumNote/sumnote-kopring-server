@@ -1,4 +1,7 @@
-import com.capston.sumnote.util.security.jwt.JwtTokenProvider
+package com.capston.sumnote.util.security.jwt
+
+import com.capston.sumnote.util.response.CustomApiResponse
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.ServletRequest
@@ -13,22 +16,33 @@ class JwtTokenFilter(private val jwtTokenProvider: JwtTokenProvider) : GenericFi
 
     @Throws(IOException::class, ServletException::class)
     override fun doFilter(req: ServletRequest, res: ServletResponse, filterChain: FilterChain) {
-        val token = jwtTokenProvider.resolveToken(req as HttpServletRequest)
-        if (token != null) {
-            try {
-                if (jwtTokenProvider.validateToken(token)) {
-                    val auth = jwtTokenProvider.getAuthentication(token)
-                    SecurityContextHolder.getContext().authentication = auth
-                } else {
-                    (res as HttpServletResponse).status = HttpServletResponse.SC_UNAUTHORIZED
-                    return // 토큰이 유효하지 않으면 리턴
-                }
-            } catch (e: Exception) {
-                SecurityContextHolder.clearContext()
-                (res as HttpServletResponse).status = HttpServletResponse.SC_UNAUTHORIZED
-                return // 토큰이 유효하지 않으면 리턴
+        val request = req as HttpServletRequest
+        val response = res as HttpServletResponse
+        val token = jwtTokenProvider.resolveToken(request)
+
+        try {
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                val auth = jwtTokenProvider.getAuthentication(token)
+                SecurityContextHolder.getContext().authentication = auth
+            } else {
+                unauthorizedResponse(response)
+                return
             }
+        } catch (e: Exception) {
+            unauthorizedResponse(response)
+            return
         }
         filterChain.doFilter(req, res)
+    }
+
+    // 토큰 형식이 안맞아도 json 데이터 반환
+    private fun unauthorizedResponse(response: HttpServletResponse) {
+        response.characterEncoding = "UTF-8"
+        response.contentType = "application/json"
+        response.status = HttpServletResponse.SC_UNAUTHORIZED
+        val apiResponse = CustomApiResponse.createFailWithoutData(HttpServletResponse.SC_UNAUTHORIZED, "토큰을 확인해 주세요.")
+        val json = ObjectMapper().writeValueAsString(apiResponse)
+        response.writer.print(json)
+        response.writer.close()
     }
 }

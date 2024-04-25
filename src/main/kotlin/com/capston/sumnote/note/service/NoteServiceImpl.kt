@@ -47,7 +47,7 @@ class NoteServiceImpl(
     /**
      * 노트 내용 조회
      */
-    override fun getNote(email: String, noteId: Long): CustomApiResponse<*> {
+    override fun getNote(email: String, noteId: Long): CustomApiResponse<*> { // TODO : 접근할 수 없는 노트
         val note = noteRepository.findById(noteId).orElse(null)
             ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "id가 " + noteId + "인 노트는 존재하지 않습니다.")
         val noteDetail = NoteDetail(noteId = note.id!!, title = note.title!!)
@@ -55,6 +55,28 @@ class NoteServiceImpl(
             NotePageDetail(notePageId = it.id!!, title = it.title!!, content = it.content!!, isQuizExist = it.isQuizExists ?: false)
         }
         return CustomApiResponse.createSuccess(HttpStatus.OK.value(), GetNoteDto(note = noteDetail, notePages = notePagesDetails), "노트 조회에 성공하였습니다.")
+    }
+
+    @Transactional
+    override fun changeTitle(email: String, noteId: Long, dto: ChangeTitleDto): CustomApiResponse<*> {
+        // 노트 찾기
+        val note = noteRepository.findById(noteId).orElse(null)
+            ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "id가 " + noteId + "인 노트는 존재하지 않습니다.")
+
+        // 이메일로 사용자 찾기
+        val member = memberRepository.findByEmail(email).orElse(null)
+            ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "사용자를 찾을 수 없습니다.")
+
+        // 사용자가 해당 노트를 갖고있는지 확인
+        if (note.member != member) {
+            return CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "접근할 수 없는 노트입니다.")
+        }
+
+        // 업데이트
+        note.updateTitle(dto)
+
+        // 응답
+        return CustomApiResponse.createSuccessWithoutData<Unit>(HttpStatus.OK.value(), "노트 제목이 정상적으로 변경되었습니다.")
     }
 
 

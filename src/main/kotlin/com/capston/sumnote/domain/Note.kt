@@ -1,5 +1,6 @@
 package com.capston.sumnote.domain
 
+import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
 
@@ -21,4 +22,9 @@ class Note(
     @OneToMany(mappedBy = "note", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var notePages: MutableList<NotePage> = mutableListOf()
 
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun updateTitle(dto: ChangeTitleDto) {
+        this.title = dto.changeTitle
+    }
+}

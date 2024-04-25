@@ -1,5 +1,6 @@
 package com.capston.sumnote.note.controller
 
+import com.capston.sumnote.note.dto.AddNotePageDto
 import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.note.service.NoteService
 import com.capston.sumnote.note.dto.CreateNoteDto
@@ -13,55 +14,37 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/sum-note")
 class NoteController(private val noteService: NoteService) {
 
+    private fun getCurrentUserEmail(): String =
+        (SecurityContextHolder.getContext().authentication.principal as? User)?.username
+            ?: "사용자를 찾을 수 없습니다."
+
     @PostMapping
     fun createNote(@RequestBody dto: CreateNoteDto): ResponseEntity<CustomApiResponse<*>> {
-
-        // 헤더에 포함된 토큰으로 이메일 값 찾기
-        val email = (SecurityContextHolder.getContext().authentication.principal as? User)?.username
-
-        // 응답 데이터
-        val response = noteService.createNote(dto, email ?: "사용자를 찾을 수 없습니다.")
-
-        // 응답
+        val response = noteService.createNote(dto, getCurrentUserEmail())
         return ResponseEntity.status(response.status).body(response)
     }
 
     @GetMapping
     fun getNotes(@RequestParam("type") type: String): ResponseEntity<CustomApiResponse<*>> {
-
-        // 헤더에 포함된 토큰으로 이메일 값 찾기
-        val email = (SecurityContextHolder.getContext().authentication.principal as? User)?.username
-
-        // 응답 데이터
-        val response = noteService.findNotesByType(email ?: "사용자를 찾을 수 없습니다.", type)
-
-        // 응답
+        val response = noteService.findNotesByType(getCurrentUserEmail(), type)
         return ResponseEntity.status(response.status).body(response)
     }
 
-    @GetMapping ("{noteId}")
+    @GetMapping("{noteId}")
     fun getNote(@PathVariable("noteId") noteId: Long): ResponseEntity<CustomApiResponse<*>> {
-
-        // 헤더에 포함된 토큰으로 이메일 값 찾기
-        val email = (SecurityContextHolder.getContext().authentication.principal as? User)?.username
-
-        // 응답 데이터
-        val responseData = noteService.getNote(email ?: "사용자를 찾을 수 없습니다.", noteId)
-
-        // 응답
+        val responseData = noteService.getNote(getCurrentUserEmail(), noteId)
         return ResponseEntity.status(responseData.status).body(responseData)
     }
 
     @PutMapping("{noteId}/title")
     fun changeNoteTitle(@PathVariable("noteId") noteId: Long, @RequestBody dto: ChangeTitleDto): ResponseEntity<CustomApiResponse<*>> {
+        val responseData = noteService.changeTitle(getCurrentUserEmail(), noteId, dto)
+        return ResponseEntity.status(responseData.status).body(responseData)
+    }
 
-        // 헤더에 포함된 토큰으로 이메일 값 찾기
-        val email = (SecurityContextHolder.getContext().authentication.principal as? User)?.username
-
-        // 응답 데이터
-        val responseData = noteService.changeTitle(email ?: "사용자를 찾을 수 없습니다.", noteId, dto)
-
-        // 응답
+    @PutMapping("{noteId}/add")
+    fun addNotePage(@PathVariable("noteId") noteId: Long, @RequestBody dto: AddNotePageDto): ResponseEntity<CustomApiResponse<*>> {
+        val responseData = noteService.addNotePage(getCurrentUserEmail(), noteId, dto)
         return ResponseEntity.status(responseData.status).body(responseData)
     }
 }

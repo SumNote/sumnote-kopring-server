@@ -1,6 +1,6 @@
 package com.capston.sumnote.util.security
 
-import JwtTokenFilter
+import com.capston.sumnote.util.security.jwt.JwtTokenFilter
 import org.springframework.security.config.annotation.web.invoke
 import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import org.springframework.context.annotation.Bean
@@ -36,7 +36,6 @@ class SecurityConfig(
             }
             httpBasic {} // HTTP 기본 인증 활성화 (필요한 경우)
             formLogin { disable() } // 폼 로그인 비활성화 (JWT 사용 시 일반적으로 비활성화)
-            // JwtTokenFilter 추가
             addFilterBefore<UsernamePasswordAuthenticationFilter>(JwtTokenFilter(jwtTokenProvider))
             exceptionHandling {
                 authenticationEntryPoint = customAuthenticationEntryPoint // 응답 401 내려주기 등록
@@ -46,13 +45,9 @@ class SecurityConfig(
     }
 
     @Bean
-    fun jwtTokenFilter(): JwtTokenFilter {
-        return JwtTokenFilter(jwtTokenProvider)
-    }
+    fun jwtTokenFilter(): JwtTokenFilter = JwtTokenFilter(jwtTokenProvider)
 
-    // PasswordEncoder 빈이 필요한 경우 추가
     @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
 }

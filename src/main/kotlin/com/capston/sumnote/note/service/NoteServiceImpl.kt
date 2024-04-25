@@ -110,7 +110,7 @@ class NoteServiceImpl(
 
         // ResponseBody 에 포함될 데이터
         return CustomApiResponse.createSuccessWithoutData<Unit>(
-            HttpStatus.CREATED.value(), "페이지가 정상적으로 추가되었습니다."
+            HttpStatus.OK.value(), "페이지가 정상적으로 추가되었습니다."
         )
     }
 

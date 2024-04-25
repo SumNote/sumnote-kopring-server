@@ -1,5 +1,6 @@
 package com.capston.sumnote.note.controller
 
+import com.capston.sumnote.note.dto.AddNotePageDto
 import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.note.service.NoteService
 import com.capston.sumnote.note.dto.CreateNoteDto
@@ -60,6 +61,19 @@ class NoteController(private val noteService: NoteService) {
 
         // 응답 데이터
         val responseData = noteService.changeTitle(email ?: "사용자를 찾을 수 없습니다.", noteId, dto)
+
+        // 응답
+        return ResponseEntity.status(responseData.status).body(responseData)
+    }
+
+    @PutMapping("{noteId}/add")
+    fun addNotePage(@PathVariable("noteId") noteId: Long, @RequestBody dto: AddNotePageDto): ResponseEntity<CustomApiResponse<*>> {
+
+        // 헤더에 포함된 토큰으로 이메일 값 찾기
+        val email = (SecurityContextHolder.getContext().authentication.principal as? User)?.username
+
+        // 응답 데이터
+        val responseData = noteService.addNotePage(email ?: "사용자를 찾을 수 없습니다.", noteId, dto)
 
         // 응답
         return ResponseEntity.status(responseData.status).body(responseData)

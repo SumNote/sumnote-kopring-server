@@ -57,8 +57,12 @@ class NoteServiceImpl(
         return CustomApiResponse.createSuccess(HttpStatus.OK.value(), GetNoteDto(note = noteDetail, notePages = notePagesDetails), "노트 조회에 성공하였습니다.")
     }
 
+    /**
+     * 노트 제목 수정
+     */
     @Transactional
     override fun changeTitle(email: String, noteId: Long, dto: ChangeTitleDto): CustomApiResponse<*> {
+
         // 노트 찾기
         val note = noteRepository.findById(noteId).orElse(null)
             ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "id가 " + noteId + "인 노트는 존재하지 않습니다.")
@@ -78,6 +82,40 @@ class NoteServiceImpl(
         // 응답
         return CustomApiResponse.createSuccessWithoutData<Unit>(HttpStatus.OK.value(), "노트 제목이 정상적으로 변경되었습니다.")
     }
+
+    /**
+     * 노트에 페이지 추가
+     */
+    @Transactional
+    override fun addNotePage(email: String, noteId: Long, dto: AddNotePageDto): CustomApiResponse<*> {
+
+        // 노트 찾기
+        val note = noteRepository.findById(noteId).orElse(null)
+            ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "id가 $noteId 인 노트는 존재하지 않습니다.")
+
+        // 이메일로 사용자 찾기
+        val member = memberRepository.findByEmail(email).orElse(null)
+            ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "사용자를 찾을 수 없습니다.")
+
+        // 사용자가 해당 노트를 갖고있는지 확인
+        if (note.member != member) {
+            return CustomApiResponse.createFailWithoutData(HttpStatus.FORBIDDEN.value(), "접근할 수 없는 노트입니다.")
+        }
+
+        // 노트페이지 생성
+        val newNotePage = NotePage(
+            title = dto.title,
+            content = dto.content,
+            note = note
+        )
+
+        // 저장
+        notePageRepository.save(newNotePage)
+
+        // 응답
+        return CustomApiResponse.createSuccessWithoutData<Unit>(HttpStatus.CREATED.value(), "페이지가 정상적으로 추가되었습니다.")
+    }
+
 
 
 }

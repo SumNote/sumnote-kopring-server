@@ -56,3 +56,10 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+// JAR 파일의 이름을 설정
+tasks {
+	val bootJar by getting(org.springframework.boot.gradle.tasks.bundling.BootJar::class) {
+		archiveFileName.set("app.jar")
+	}
+}

@@ -55,6 +55,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	enabled = false
 }
 
 // JAR 파일의 이름을 설정

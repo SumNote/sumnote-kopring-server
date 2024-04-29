@@ -10,7 +10,7 @@ class QuizPage (
     @Id
     @GeneratedValue
     @Column(name = "quiz_page_id")
-    var id : Long,
+    var id : Long? = null,
 
     var question : String,
 
@@ -18,10 +18,16 @@ class QuizPage (
 
     var commentary : String,
 
-    @Embedded
-    var choice: Choice,
+    @OneToMany(mappedBy = "quizPage", cascade = [CascadeType.ALL])
+    var selections: MutableList<Selection> = mutableListOf(),
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id")
     var quiz : Quiz
-)
+) {
+    //==연관관계편의 메소드==//
+    fun addSelection(selection: Selection) {
+        selections.add(selection)
+        selection.quizPage = this
+    }
+}

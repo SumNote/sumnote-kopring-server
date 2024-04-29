@@ -14,9 +14,13 @@ class Quiz (
     @Id
     @GeneratedValue
     @Column(name = "quiz_id")
-    var id: Long,
+    var id: Long? = null,
 
     var title : String,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    var member: Member? = null,
 
     @OneToMany(mappedBy = "quiz", cascade = [CascadeType.ALL])
     var quizPages : MutableList<QuizPage> = mutableListOf(),

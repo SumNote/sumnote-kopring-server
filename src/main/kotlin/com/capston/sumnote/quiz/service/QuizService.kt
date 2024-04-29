@@ -5,4 +5,6 @@ import com.capston.sumnote.util.response.CustomApiResponse
 
 interface QuizService {
     fun createQuiz(dto: CreateQuizDto, email: String): CustomApiResponse<*>
+
+    fun getQuiz(email: String): CustomApiResponse<*>
 }

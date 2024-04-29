@@ -40,6 +40,11 @@ class QuizServiceImpl(
         return CustomApiResponse.createSuccessWithoutData<Unit>(HttpStatus.CREATED.value(), "퀴즈가 정상적으로 생성되었습니다.")
     }
 
+    override fun getQuiz(email: String): CustomApiResponse<*> {
+
+        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findByMemberEmailOrderByLastModifiedAtDesc(email), "모든 퀴즈 조회에 성공하였습니다.")
+    }
+
     // 사용자 찾기
     private fun getMember(email: String): Member? =
             memberRepository.findByEmail(email).orElse(null)

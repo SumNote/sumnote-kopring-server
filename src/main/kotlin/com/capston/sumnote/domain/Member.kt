@@ -19,6 +19,9 @@ class Member(
     var name: String? = null,
 
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var notes: MutableList<Note> = mutableListOf()
+    var notes: MutableList<Note> = mutableListOf(),
+
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var quiz: MutableList<Quiz> = mutableListOf()
 
 ) : BaseEntity()

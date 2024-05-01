@@ -27,4 +27,10 @@ class QuizController (private var quizService: QuizService){
         val response = quizService.getQuiz(getCurrentUserEmail())
         return ResponseEntity.status(response.status).body(response)
     }
+
+    @GetMapping("{quizId}")
+    fun getOneQuiz(@PathVariable("quizId") quizId: Long): ResponseEntity<CustomApiResponse<*>> {
+        val response = quizService.getOneQuiz(getCurrentUserEmail(), quizId)
+        return ResponseEntity.status(response.status).body(response)
+    }
 }

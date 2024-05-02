@@ -3,7 +3,7 @@ package com.capston.sumnote.domain
 import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
-
+import lombok.Builder
 @Entity
 @Table(name = "NOTE_DOCS")
 class Note(
@@ -20,7 +20,11 @@ class Note(
     var member: Member? = null,
 
     @OneToMany(mappedBy = "note", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var notePages: MutableList<NotePage> = mutableListOf()
+    var notePages: MutableList<NotePage> = mutableListOf(),
+
+    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @JoinColumn(name = "quiz_id")
+    var quiz: Quiz? = null,
 
 ) : BaseEntity() {
 

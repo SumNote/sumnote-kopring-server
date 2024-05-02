@@ -25,6 +25,9 @@ class Quiz (
     @OneToMany(mappedBy = "quiz", cascade = [CascadeType.ALL])
     var quizPages : MutableList<QuizPage> = mutableListOf(),
 
+    @OneToOne(mappedBy = "quiz", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var note: Note? = null,
+
 ) : BaseEntity() {
     //==연관관계편의 메소드==//
     fun addQuizPage(quizPage: QuizPage) {

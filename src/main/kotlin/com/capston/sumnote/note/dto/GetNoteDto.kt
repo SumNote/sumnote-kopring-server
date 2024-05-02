@@ -13,6 +13,5 @@ data class NoteDetail(
 data class NotePageDetail(
     val notePageId: Long,
     val title: String,
-    val content: String,
-    val isQuizExist: Boolean
+    val content: String
 )

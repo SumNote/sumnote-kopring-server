@@ -59,7 +59,7 @@ class NoteServiceImpl(
         // 노트 검증을 성공적으로 통과한 후, 노트의 상세 정보를 생성하여 반환
         val noteDetail = NoteDetail(noteId = note!!.id!!, title = note.title!!)
         val notePagesDetails = note.notePages.map {
-            NotePageDetail(notePageId = it.id!!, title = it.title!!, content = it.content!!, isQuizExist = it.isQuizExists ?: false)
+            NotePageDetail(notePageId = it.id!!, title = it.title!!, content = it.content!!)
         }
 
         // ResponseBody 에 포함될 데이터

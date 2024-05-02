@@ -1,6 +1,7 @@
 package com.capston.sumnote.quiz.dto
 
 data class CreateQuizDto (
+        val noteId : Long,
         val title : String,
         val quiz : List<QuizInfo>
 ) {

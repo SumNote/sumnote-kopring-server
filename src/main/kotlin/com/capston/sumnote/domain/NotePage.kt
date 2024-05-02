@@ -22,8 +22,4 @@ class NotePage(
     @Column(name = "note_page_content", columnDefinition = "TEXT")
     var content: String? = null,
 
-    @Builder.Default
-    @Column(name = "is_quiz_exists")
-    var isQuizExists: Boolean? = false
-
 ) : BaseEntity()

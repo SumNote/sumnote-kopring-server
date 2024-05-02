@@ -42,9 +42,10 @@ class QuizServiceImpl(
         return CustomApiResponse.createSuccessWithoutData<Unit>(HttpStatus.CREATED.value(), "퀴즈가 정상적으로 생성되었습니다.")
     }
 
-    override fun getQuiz(email: String): CustomApiResponse<*> {
-
-        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findByMemberEmailOrderByLastModifiedAtDesc(email), "모든 퀴즈 조회에 성공하였습니다.")
+    override fun getQuiz(email: String, type: String): CustomApiResponse<*> = when(type){
+        "home" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findTop5ByMemberEmailOrderByLastModifiedAtDesc(email), "최근 생성된 퀴즈 5개 조회에 성공하였습니다.")
+        "all" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findAllByMemberEmailOrderByLastModifiedAtDesc(email), "모든 퀴즈 조회에 성공하였습니다.")
+        else -> CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "type은 home 또는 all 이어야 합니다.")
     }
 
     override fun getOneQuiz(email: String, quizId: Long): CustomApiResponse<*> {

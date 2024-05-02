@@ -23,8 +23,8 @@ class QuizController (private var quizService: QuizService){
     }
 
     @GetMapping
-    fun getQuiz(): ResponseEntity<CustomApiResponse<*>> {
-        val response = quizService.getQuiz(getCurrentUserEmail())
+    fun getQuiz(@RequestParam("type") type: String): ResponseEntity<CustomApiResponse<*>> {
+        val response = quizService.getQuiz(getCurrentUserEmail(), type)
         return ResponseEntity.status(response.status).body(response)
     }
 

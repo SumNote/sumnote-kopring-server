@@ -115,6 +115,30 @@ class NoteServiceImpl(
     }
 
     /**
+     * 노트 삭제
+     */
+    @Transactional
+    override fun deleteNoteAndQuiz(email:String, noteId: Long): CustomApiResponse<*> {
+
+        // 노트 검증 (1. 노트가 존재하는지, 2. 노트가 사용자의 것인지)
+        val (note, errorResponse) = verifyNoteOwnership(email, noteId)
+        if (errorResponse != null) {
+            return errorResponse
+        }
+
+        // 4-1. 노트 + 노트 페이지 삭제
+        note?.let { noteRepository.delete(it) }
+
+        // TODO: 4-2. 퀴즈 + 퀴즈 페이지 -> 퀴즈 생성 오류 해결 후 개발
+
+        // ResponseBody 에 포함될 데이터
+        return CustomApiResponse.createSuccessWithoutData<Unit>(
+            HttpStatus.OK.value(), "노트가 정상적으로 삭제되었습니다."
+        )
+
+    }
+
+    /**
      * 공통 로직
      */
     private fun verifyNoteOwnership(email: String, noteId: Long): Pair<Note?, CustomApiResponse<*>?> {

@@ -19,7 +19,7 @@ class Note(
     @JoinColumn(name = "member_id")
     var member: Member? = null,
 
-    @OneToMany(mappedBy = "note", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "note", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
     var notePages: MutableList<NotePage> = mutableListOf(),
 
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)

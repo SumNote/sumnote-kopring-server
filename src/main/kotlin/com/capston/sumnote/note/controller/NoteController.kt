@@ -47,4 +47,10 @@ class NoteController(private val noteService: NoteService) {
         val responseData = noteService.addNotePage(getCurrentUserEmail(), noteId, dto)
         return ResponseEntity.status(responseData.status).body(responseData)
     }
+
+    @DeleteMapping("{noteId}")
+    fun deleteNoteAndQuiz(@PathVariable("noteId") noteId: Long): ResponseEntity<CustomApiResponse<*>> {
+        val responseData = noteService.deleteNoteAndQuiz(getCurrentUserEmail(), noteId)
+        return ResponseEntity.status(responseData.status).body(responseData)
+    }
 }

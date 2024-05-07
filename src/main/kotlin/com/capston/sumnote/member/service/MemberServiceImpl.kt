@@ -17,7 +17,9 @@ class MemberServiceImpl(
     private val jwtTokenProvider: JwtTokenProvider
 ) : MemberService {
 
-    // 로그인
+    /**
+     * 회원가입/로그인
+     */
     @Transactional
     override fun login(dto: LoginDto.Req): Pair<LoginDto.Res, String> {
         val member = memberRepository.findByEmail(dto.email).orElseGet {
@@ -32,6 +34,9 @@ class MemberServiceImpl(
         return Pair(response, token)
     }
 
+    /**
+     * 회원탈퇴
+     */
     @Transactional
     override fun withdraw(email: String): CustomApiResponse<*> {
         checkEmailRegexValid(email)

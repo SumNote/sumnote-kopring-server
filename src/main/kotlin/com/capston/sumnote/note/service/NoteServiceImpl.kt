@@ -24,13 +24,17 @@ class NoteServiceImpl(
      * 노트 생성
      */
     @Transactional
-    override fun createNote(dto: CreateNoteDto, email: String): CustomApiResponse<*> {
+    override fun createNote(email: String, dto: CreateNoteDto): CustomApiResponse<*> {
         val member = getMember(email) ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "사용자를 찾을 수 없습니다.")
         val note = Note(title = dto.note.title, member = member)
-        val savedNote = noteRepository.save(note)
+
+        // NotePage 객체들을 생성하고 Note 객체에 추가 -> CascadeType.ALL 이용
         dto.notePages.forEach {
-            notePageRepository.save(NotePage(title = it.title, content = it.content, note = savedNote))
+            val notePage = NotePage(title = it.title, content = it.content, note = note)
+            note.notePages.add(notePage)
         }
+
+        noteRepository.save(note)
 
         // ResponseBody 에 포함될 데이터
         return CustomApiResponse.createSuccessWithoutData<Unit>(HttpStatus.CREATED.value(), "노트가 정상적으로 생성되었습니다.")
@@ -40,8 +44,8 @@ class NoteServiceImpl(
      * 노트 목록 조회
      */
     override fun findNotesByType(email: String, type: String): CustomApiResponse<*> = when (type) {
-        "home" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), noteRepository.findTop5ByMemberEmailOrderByLastModifiedAtDesc(email), "최근 생성된 노트 5개 조회에 성공하였습니다.")
-        "all" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), noteRepository.findAllByMemberEmailOrderByLastModifiedAtDesc(email), "모든 노트 조회에 성공하였습니다.")
+        "home" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), noteRepository.findNoteAtHome(email), "최근 생성된 노트 5개 조회에 성공하였습니다.")
+        "all" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), noteRepository.findNoteAtAll(email), "모든 노트 조회에 성공하였습니다.")
         else -> CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "type은 home 또는 all 이어야 합니다.")
     }
 

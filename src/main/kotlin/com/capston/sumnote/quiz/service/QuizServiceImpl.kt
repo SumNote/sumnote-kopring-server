@@ -2,7 +2,6 @@ package com.capston.sumnote.quiz.service
 
 import com.capston.sumnote.domain.*
 import com.capston.sumnote.member.repository.MemberRepository
-import com.capston.sumnote.note.dto.GetNoteDto
 import com.capston.sumnote.note.repository.NoteRepository
 import com.capston.sumnote.quiz.dto.CreateQuizDto
 import com.capston.sumnote.quiz.dto.GetQuizDto
@@ -25,28 +24,27 @@ class QuizServiceImpl(
 ) : QuizService{
 
     @Transactional
-    override fun createQuiz(dto: CreateQuizDto, email: String): CustomApiResponse<*> {
+    override fun createQuiz(email: String, dto: CreateQuizDto): CustomApiResponse<*> {
         val member = getMember(email) ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "사용자를 찾을 수 없습니다.")
 
         val note = noteRepository.findById(dto.noteId).orElse(null)
                 ?: return CustomApiResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "노트를 찾을 수 없습니다.") // 노트를 찾음
 
-        // 노트가 이미 퀴즈를 가지고 있는지 확인
-        if (note.quiz == null) {
-            // 노트가 퀴즈를 가지고 있지 않으면 새로운 퀴즈 생성
-            val quiz = Quiz(title = dto.title, member = member)
-            val savedQuiz = quizRepository.save(quiz)
-            note.quiz = savedQuiz // 노트에 새로운 퀴즈 연결
+        // 노트가 퀴즈를 가지고 있는지 확인하고 가지고 있지 않으면 새로운 퀴즈 생성
+        val quiz = note.quiz ?: Quiz(title = dto.title, member = member).also {
+            // 노트에 새로운 퀴즈 연결
+            note.quiz = it
+            quizRepository.save(it)
         }
 
-        // 퀴즈 페이지 생성 및 추가
-        val quiz = note.quiz!!
-        dto.quiz.forEach {
-            val quizPage = QuizPage(question = it.question, answer = it.answer, commentary = it.commentary, quiz = quiz)
-            val savedQuizPage = quizPageRepository.save(quizPage)
+        // 퀴즈 페이지 및 선택지들 생성 및 추가
+        dto.quiz.forEach { quizInfo ->
+            val quizPage = QuizPage(question = quizInfo.question, answer = quizInfo.answer, commentary = quizInfo.commentary, quiz = quiz)
+            quizPageRepository.save(quizPage) // QuizPage 저장
 
-            for (s in it.selection) {
-                quizPage.addSelection(Selection(selection = s, quizPage = savedQuizPage))
+            quizInfo.selection.forEach { selectionText ->
+                val selection = Selection(selection = selectionText, quizPage = quizPage)
+                quizPage.selections.add(selection) // Selection 리스트에 추가
             }
         }
 
@@ -55,8 +53,8 @@ class QuizServiceImpl(
 
 
     override fun getQuiz(email: String, type: String): CustomApiResponse<*> = when(type){
-        "home" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findTop5ByMemberEmailOrderByLastModifiedAtDesc(email), "최근 생성된 퀴즈 5개 조회에 성공하였습니다.")
-        "all" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findAllByMemberEmailOrderByLastModifiedAtDesc(email), "모든 퀴즈 조회에 성공하였습니다.")
+        "home" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findQuizAtHome(email), "최근 생성된 퀴즈 5개 조회에 성공하였습니다.")
+        "all" -> CustomApiResponse.createSuccess(HttpStatus.OK.value(), quizRepository.findQuizAtAll(email), "모든 퀴즈 조회에 성공하였습니다.")
         else -> CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), "type은 home 또는 all 이어야 합니다.")
     }
 

@@ -2,10 +2,6 @@ package com.capston.sumnote.domain
 
 import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
-import lombok.Getter
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedDate
-import java.time.LocalDateTime
 
 
 @Entity

@@ -3,11 +3,10 @@ package com.capston.sumnote.member.service
 import com.capston.sumnote.member.dto.LoginDto
 import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.util.exception.CustomValidationException
-import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import com.capston.sumnote.util.response.CustomApiResponse
+import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import com.capston.sumnote.util.valid.CustomValid
 import org.springframework.stereotype.Service
-import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -17,7 +16,9 @@ class MemberServiceImpl(
     private val jwtTokenProvider: JwtTokenProvider
 ) : MemberService {
 
-    // 로그인
+    /**
+     * 회원가입/로그인
+     */
     @Transactional
     override fun login(dto: LoginDto.Req): Pair<LoginDto.Res, String> {
         val member = memberRepository.findByEmail(dto.email).orElseGet {
@@ -32,6 +33,9 @@ class MemberServiceImpl(
         return Pair(response, token)
     }
 
+    /**
+     * 회원탈퇴
+     */
     @Transactional
     override fun withdraw(email: String): CustomApiResponse<*> {
         checkEmailRegexValid(email)

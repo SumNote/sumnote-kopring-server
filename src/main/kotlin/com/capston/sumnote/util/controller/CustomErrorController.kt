@@ -1,8 +1,8 @@
 package com.capston.sumnote.util.controller
 
+import com.capston.sumnote.util.response.CustomApiResponse
 import jakarta.servlet.RequestDispatcher
 import jakarta.servlet.http.HttpServletRequest
-import com.capston.sumnote.util.response.CustomApiResponse
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

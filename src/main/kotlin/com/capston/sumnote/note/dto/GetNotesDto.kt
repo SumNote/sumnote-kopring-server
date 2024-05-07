@@ -1,7 +1,7 @@
 package com.capston.sumnote.note.dto
 
-import java.time.LocalDateTime
 import com.capston.sumnote.util.response.DateFormatter
+import java.time.LocalDateTime
 
 class GetNotesDto(
     val noteId: Long,

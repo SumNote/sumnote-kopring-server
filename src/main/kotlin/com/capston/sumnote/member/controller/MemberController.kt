@@ -4,9 +4,9 @@ import com.capston.sumnote.member.dto.LoginDto
 import com.capston.sumnote.member.service.MemberServiceImpl
 import com.capston.sumnote.util.response.CustomApiResponse
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/member")

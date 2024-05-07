@@ -1,7 +1,6 @@
 package com.capston.sumnote.domain
 
 import jakarta.persistence.*
-import lombok.Getter
 
 @Entity
 @Table(name = "quiz_page")

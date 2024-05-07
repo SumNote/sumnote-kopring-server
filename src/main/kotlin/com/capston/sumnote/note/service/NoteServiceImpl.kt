@@ -4,8 +4,8 @@ import com.capston.sumnote.domain.Note
 import com.capston.sumnote.domain.NotePage
 import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.note.dto.*
-import com.capston.sumnote.note.repository.NoteRepository
 import com.capston.sumnote.note.repository.NotePageRepository
+import com.capston.sumnote.note.repository.NoteRepository
 import com.capston.sumnote.util.exception.EntityNotFoundException
 import com.capston.sumnote.util.response.CustomApiResponse
 import org.springframework.http.HttpStatus

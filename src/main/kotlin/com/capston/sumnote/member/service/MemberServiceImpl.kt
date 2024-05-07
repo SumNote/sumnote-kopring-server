@@ -3,11 +3,10 @@ package com.capston.sumnote.member.service
 import com.capston.sumnote.member.dto.LoginDto
 import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.util.exception.CustomValidationException
-import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import com.capston.sumnote.util.response.CustomApiResponse
+import com.capston.sumnote.util.security.jwt.JwtTokenProvider
 import com.capston.sumnote.util.valid.CustomValid
 import org.springframework.stereotype.Service
-import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
 
 @Service

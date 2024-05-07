@@ -1,9 +1,14 @@
 package com.capston.sumnote.quiz.service
 
-import com.capston.sumnote.domain.*
+import com.capston.sumnote.domain.Quiz
+import com.capston.sumnote.domain.QuizPage
+import com.capston.sumnote.domain.Selection
 import com.capston.sumnote.member.repository.MemberRepository
 import com.capston.sumnote.note.repository.NoteRepository
-import com.capston.sumnote.quiz.dto.*
+import com.capston.sumnote.quiz.dto.CreateQuizDto
+import com.capston.sumnote.quiz.dto.GetQuizDto
+import com.capston.sumnote.quiz.dto.PageSelection
+import com.capston.sumnote.quiz.dto.QuizPageInfo
 import com.capston.sumnote.quiz.repository.QuizPageRepository
 import com.capston.sumnote.quiz.repository.QuizRepository
 import com.capston.sumnote.util.response.CustomApiResponse

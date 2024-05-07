@@ -3,7 +3,7 @@ package com.capston.sumnote.domain
 import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
-import lombok.Builder
+
 @Entity
 @Table(name = "NOTE_DOCS")
 class Note(

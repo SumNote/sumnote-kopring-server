@@ -2,7 +2,6 @@ package com.capston.sumnote.domain
 
 import com.capston.sumnote.util.entity.BaseEntity
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "MEMBERS")

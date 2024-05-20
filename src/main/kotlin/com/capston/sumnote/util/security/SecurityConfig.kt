@@ -32,6 +32,7 @@ class SecurityConfig(
             }
             authorizeHttpRequests {
                 authorize("/api/member/login", permitAll) // 로그인 경로는 누구나 접근 가능
+                authorize("/api/test", permitAll) // 테스트는 누구나 접근 가능
                 authorize(anyRequest, authenticated)
             }
             httpBasic {} // HTTP 기본 인증 활성화 (필요한 경우)

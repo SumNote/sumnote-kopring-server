@@ -6,17 +6,24 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@RequestMapping("/api/test")
 class TestController(private val jwtTokenProvider: JwtTokenProvider) {
 
-    @GetMapping("/api/test/authenticated")
+    @GetMapping
+    fun simpleTest(): String {
+        return "test success"
+    }
+
+    @GetMapping("/authenticated")
     fun testAuthenticated(): CustomApiResponse<String> {
         return CustomApiResponse.createSuccess(200, "OK", "Request successful")
     }
 
-    @GetMapping("/api/test/email")
+    @GetMapping("/email")
     fun getUserInfo(request: HttpServletRequest): ResponseEntity<String> {
         val token = jwtTokenProvider.resolveToken(request)
         return if (token != null && jwtTokenProvider.validateToken(token)) {

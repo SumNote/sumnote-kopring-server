@@ -25,7 +25,7 @@ class JwtTokenFilter(private val jwtTokenProvider: JwtTokenProvider) : GenericFi
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 val auth = jwtTokenProvider.getAuthentication(token)
                 SecurityContextHolder.getContext().authentication = auth
-            } else if (requestURI == "/api/member/login") {
+            } else if (requestURI == "/api/member/login" || requestURI == "/api/test") { // 토큰 없는 요청 (로그인, 테스트)
                 // 그대로 요청 진행
             } else {
                 unauthorizedResponse(response)

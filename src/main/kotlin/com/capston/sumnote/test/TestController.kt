@@ -15,7 +15,7 @@ class TestController(private val jwtTokenProvider: JwtTokenProvider) {
 
     @GetMapping
     fun simpleTest(): String {
-        return "test success"
+        return "test success (add webhook)"
     }
 
     @GetMapping("/authenticated")

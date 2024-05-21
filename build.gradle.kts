@@ -6,6 +6,7 @@ plugins {
 	kotlin("jvm") version "1.9.22"
 	kotlin("plugin.spring") version "1.9.22"
 	kotlin("plugin.jpa") version "1.9.22"
+	id("jacoco") // jacoco 추가
 }
 
 group = "com.capston"
@@ -55,7 +56,16 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-	enabled = false
+	finalizedBy("jacocoTestReport") // 테스트 끝난 후 Report 실행
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test) // 테스트가 실행된 후 리포트 생성
+
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
 }
 
 // JAR 파일의 이름을 설정

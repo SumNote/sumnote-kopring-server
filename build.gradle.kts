@@ -6,7 +6,7 @@ plugins {
 	kotlin("jvm") version "1.9.22"
 	kotlin("plugin.spring") version "1.9.22"
 	kotlin("plugin.jpa") version "1.9.22"
-	id("jacoco") // jacoco 추가
+	id("jacoco")
 }
 
 group = "com.capston"
@@ -41,10 +41,17 @@ dependencies {
 	// Security
 	implementation("org.springframework.boot:spring-boot-starter-security")
 
+	// JUnit5
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("com.mysql:mysql-connector-j")
 	annotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(group = "junit", module = "junit")  // JUnit4 의존성 제외
+		exclude(group = "org.mockito", module = "mockito-core")  // Mockito 1.x 제외
+	}
 }
 
 tasks.withType<KotlinCompile> {
@@ -56,11 +63,11 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-	finalizedBy("jacocoTestReport") // 테스트 끝난 후 Report 실행
+	finalizedBy("jacocoTestReport") // 테스트 후에 JaCoCo 리포트 생성
 }
 
 tasks.jacocoTestReport {
-	dependsOn(tasks.test) // 테스트가 실행된 후 리포트 생성
+	dependsOn(tasks.test) // 테스트 후에 JaCoCo 리포트 생성
 
 	reports {
 		xml.required.set(true)
@@ -68,7 +75,6 @@ tasks.jacocoTestReport {
 	}
 }
 
-// JAR 파일의 이름을 설정
 tasks {
 	val bootJar by getting(org.springframework.boot.gradle.tasks.bundling.BootJar::class) {
 		archiveFileName.set("app.jar")

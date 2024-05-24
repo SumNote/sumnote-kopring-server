@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
 	id("org.springframework.boot") version "3.2.3"
@@ -79,7 +80,28 @@ tasks.jacocoTestReport {
 }
 
 tasks {
-	val bootJar by getting(org.springframework.boot.gradle.tasks.bundling.BootJar::class) {
+	val bootJar by getting(BootJar::class) {
 		archiveFileName.set("app.jar")
+		exclude("**/Test*.class")
+	}
+
+	val testJar by creating(Jar::class) {
+		group = "build"
+		description = "Assembles a JAR archive containing the test classes."
+		archiveFileName.set("app-with-tests.jar")
+		from(sourceSets["main"].output)
+		from(sourceSets["test"].output)
+
+		manifest {
+			attributes["Main-Class"] = "com.capston.sumnote.SumNoteApplication"
+		}
+	}
+
+	val testWithJar by creating {
+		group = "build"
+		description = "Runs tests and creates a JAR including tests."
+		dependsOn("test")
+		dependsOn("jacocoTestReport")
+		dependsOn(testJar)
 	}
 }

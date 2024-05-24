@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(locations = ["classpath:application-test.properties"])
 class MemberControllerTest {
 
     @Autowired

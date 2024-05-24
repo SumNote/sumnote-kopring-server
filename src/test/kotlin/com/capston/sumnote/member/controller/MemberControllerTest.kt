@@ -31,11 +31,6 @@ class MemberControllerTest {
          */
     }
 
-    @AfterEach
-    fun tearDown() {
-        clearDatabase()
-    }
-
     @Test
     @DisplayName("로그인")
     fun 로그인() {

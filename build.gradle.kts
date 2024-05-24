@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
 	id("org.springframework.boot") version "3.2.3"
@@ -6,6 +7,7 @@ plugins {
 	kotlin("jvm") version "1.9.22"
 	kotlin("plugin.spring") version "1.9.22"
 	kotlin("plugin.jpa") version "1.9.22"
+	id("jacoco")
 }
 
 group = "com.capston"
@@ -40,10 +42,20 @@ dependencies {
 	// Security
 	implementation("org.springframework.boot:spring-boot-starter-security")
 
+	// H2
+	testImplementation("com.h2database:h2")
+
+	// JUnit5
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("com.mysql:mysql-connector-j")
 	annotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(group = "junit", module = "junit")  // JUnit4 의존성 제외
+		exclude(group = "org.mockito", module = "mockito-core")  // Mockito 1.x 제외
+	}
 }
 
 tasks.withType<KotlinCompile> {
@@ -55,12 +67,41 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-	enabled = false
+	finalizedBy("jacocoTestReport") // 테스트 후에 JaCoCo 리포트 생성
 }
 
-// JAR 파일의 이름을 설정
+tasks.jacocoTestReport {
+	dependsOn(tasks.test) // 테스트 후에 JaCoCo 리포트 생성
+
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+}
+
 tasks {
-	val bootJar by getting(org.springframework.boot.gradle.tasks.bundling.BootJar::class) {
+	val bootJar by getting(BootJar::class) {
 		archiveFileName.set("app.jar")
+		exclude("**/Test*.class")
+	}
+
+	val testJar by creating(Jar::class) {
+		group = "build"
+		description = "Assembles a JAR archive containing the test classes."
+		archiveFileName.set("app-with-tests.jar")
+		from(sourceSets["main"].output)
+		from(sourceSets["test"].output)
+
+		manifest {
+			attributes["Main-Class"] = "com.capston.sumnote.SumNoteApplication"
+		}
+	}
+
+	val testWithJar by creating {
+		group = "build"
+		description = "Runs tests and creates a JAR including tests."
+		dependsOn("test")
+		dependsOn("jacocoTestReport")
+		dependsOn(testJar)
 	}
 }

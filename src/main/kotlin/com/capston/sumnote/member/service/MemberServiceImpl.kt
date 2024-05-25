@@ -41,7 +41,7 @@ class MemberServiceImpl(
         checkEmailRegexValid(email)
 
         val member = memberRepository.findByEmail(email)
-            .orElseThrow { CustomValidationException("존재하지 않는 이메일입니다.") }
+            .orElseThrow { CustomValidationException("존재하지 않는 이메일입니다.", 404) }
 
         memberRepository.delete(member)
         return CustomApiResponse.createSuccess(200, null, "회원탈퇴 성공")
@@ -49,7 +49,7 @@ class MemberServiceImpl(
 
     private fun checkEmailRegexValid(email: String) {
         if (!CustomValid.isEmailRegexValid(email)) {
-            throw CustomValidationException("이메일 형식을 맞춰주세요.")
+            throw CustomValidationException("이메일 형식을 맞춰주세요.", 400)
         }
     }
 

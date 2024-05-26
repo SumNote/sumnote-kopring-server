@@ -40,17 +40,15 @@ class MemberControllerTest {
 
     @BeforeEach
     fun setUp() {
+
+        // DB 초기화
         clearDatabase()
 
-        // 데이터베이스에 회원 추가
-        val member = Member(
-            email = "test@example.com",
-            name = "테스트 사용자"
-        )
+        // 데이터베이스에 넣을 Member 생성
+        val member = Member(email = "test@example.com", name = "테스트 사용자")
 
+        // 데이터베이스에 저장
         memberRepository.save(member)
-
-        // 필요한 초기화 작업을 여기에 추가
     }
 
     @Test

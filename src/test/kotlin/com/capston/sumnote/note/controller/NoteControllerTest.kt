@@ -7,6 +7,7 @@ import com.capston.sumnote.note.dto.CreateNoteDto
 import com.capston.sumnote.note.repository.NotePageRepository
 import com.capston.sumnote.note.repository.NoteRepository
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -19,8 +20,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -78,7 +79,7 @@ class NoteControllerTest {
     fun 노트생성_201() {
 
         // given
-        val createNoteDto = createNoteDto()
+        val createNoteDto = createOneNoteDto()
 
         // when
         val resultActions = mockMvc.perform(
@@ -106,7 +107,7 @@ class NoteControllerTest {
     fun 노트생성_401() {
 
         // given
-        val createNoteDto = createNoteDto()
+        val createNoteDto = createOneNoteDto()
 
         // when
         val resultActions = mockMvc.perform(
@@ -129,6 +130,94 @@ class NoteControllerTest {
     }
 
     // 모든 노트 조회
+    @Test
+    @DisplayName("모든_노트_조회_홈_200")
+    fun 모든_노트_조회_홈_200() {
+
+        // given
+        val createNoteDtoList = createNoteDtoWithNum(7)
+        createNoteDtoList.forEach { createNoteDto ->
+            mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/sum-note")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createNoteDto))
+            ).andExpect(status().isCreated)
+        }
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("type", "home")
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data", Matchers.hasSize<Any>(5)))
+            .andDo(MockMvcResultHandlers.print())
+    }
+
+    @Test
+    @DisplayName("모든_노트_조회_상세_200")
+    fun 모든_노트_조회_상세_200() {
+
+        // given
+        val createNoteDtoList = createNoteDtoWithNum(7)
+        createNoteDtoList.forEach { createNoteDto ->
+            mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/sum-note")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createNoteDto))
+            ).andExpect(status().isCreated)
+        }
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("type", "all")
+        )
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data", Matchers.hasSize<Any>(7)))
+            .andDo(MockMvcResultHandlers.print())
+
+    }
+
+    @Test
+    @DisplayName("모든_노트_조회_401")
+    fun 모든_노트_조회_401() {
+
+        // given
+        val createNoteDtoList = createNoteDtoWithNum(7)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createNoteDtoList))
+        )
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note")
+                .header("Authorization", "x$authorizationHeader")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("type", "home")
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isUnauthorized)
+            .andDo(MockMvcResultHandlers.print())
+
+    }
 
 
     // 특정 노트 모든 페이지 조회
@@ -143,12 +232,35 @@ class NoteControllerTest {
     // 노트 삭제
 
 
-    // 노트/노트페이지 객체 생성 함수
-    private fun createNoteDto(): CreateNoteDto {
-        // note
-        val note = CreateNoteDto.NoteInfo("노트 제목입니다.")
+    // 노트/노트페이지 객체 생성 - 개수 지정
+    private fun createNoteDtoWithNum(numOfNotes: Int): List<CreateNoteDto> {
+        val notes = mutableListOf<CreateNoteDto>()
+        for (i in 1..numOfNotes) {
+            val noteInfo = CreateNoteDto.NoteInfo(
+                title = "노트 제목입니다$i"
+            )
+            val notePages = listOf(
+                CreateNoteDto.NotePageInfo(
+                    title = "페이지 1의 제목",
+                    content = "페이지 1의 내용입니다."
+                ),
+                CreateNoteDto.NotePageInfo(
+                    title = "페이지 2의 제목",
+                    content = "페이지 2의 내용입니다."
+                ),
+                CreateNoteDto.NotePageInfo(
+                    title = "페이지 3의 제목",
+                    content = "페이지 3의 내용입니다."
+                )
+            )
+            notes.add(CreateNoteDto(note = noteInfo, notePages = notePages))
+        }
+        return notes
+    }
 
-        // notePages 리스트
+    // 노트/노트페이지 객체 생성 - 1개만
+    private fun createOneNoteDto(): CreateNoteDto {
+        val noteInfo = CreateNoteDto.NoteInfo(title = "노트 제목입니다.")
         val notePages = listOf(
             CreateNoteDto.NotePageInfo(
                 title = "페이지 1의 제목",
@@ -164,9 +276,8 @@ class NoteControllerTest {
             )
         )
 
-        // 객체 생성
-        val createNoteDto = CreateNoteDto(note, notePages)
-        return createNoteDto
+        return CreateNoteDto(noteInfo, notePages)
+
     }
 
     private fun clearDatabase() {

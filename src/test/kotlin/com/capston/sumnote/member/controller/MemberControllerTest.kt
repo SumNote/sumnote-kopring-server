@@ -38,9 +38,6 @@ class MemberControllerTest {
     @Autowired
     private lateinit var memberRepository: MemberRepository
 
-    @Autowired
-    private lateinit var memberService: MemberServiceImpl
-
     @BeforeEach
     fun setUp() {
         clearDatabase()

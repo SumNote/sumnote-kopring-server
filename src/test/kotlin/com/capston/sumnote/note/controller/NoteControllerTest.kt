@@ -242,7 +242,7 @@ class NoteControllerTest {
         // when
 
         // DB 에 존재하는 하나의 noteId 찾기
-        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOC")
         val noteData = queryForList.get(0)
         val noteId = noteData["note_id"]
 

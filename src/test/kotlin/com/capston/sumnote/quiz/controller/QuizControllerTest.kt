@@ -5,6 +5,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import com.capston.sumnote.note.dto.CreateNoteDto
 import com.capston.sumnote.quiz.dto.CreateQuizDto
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -17,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 
 
 @SpringBootTest
@@ -57,7 +59,6 @@ class QuizControllerTest {
 
         // 노트 생성
         val createOneNoteDto = createOneNoteDto()
-
         // 노트 생성 요청
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/sum-note")
@@ -70,7 +71,6 @@ class QuizControllerTest {
         val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
         val data = queryForList.get(0)
         createdNoteId = data["note_id"].toString()
-
     }
 
     // 문제집 생성
@@ -98,7 +98,10 @@ class QuizControllerTest {
             .andDo(MockMvcResultHandlers.print())
 
         val quizDocQueryForList = jdbcTemplate.queryForList("SELECT * FROM QUIZ_DOC")
-        val quizPageQueryForList = jdbcTemplate.queryForList("SELECT * FROM QUIZ_PAGE WHERE quiz_id = ?", quizDocQueryForList.get(0)["quiz_id"])
+        val quizPageQueryForList = jdbcTemplate.queryForList(
+            "SELECT * FROM QUIZ_PAGE WHERE quiz_id = ?",
+            quizDocQueryForList.get(0)["quiz_id"]
+        )
 
         assert(quizDocQueryForList.size == 1) { "전체 퀴즈 문서 개수는 1개여야 합니다." }
         assert(quizPageQueryForList.size == 1) { "해당 퀴즈 문서의 퀴즈 페이지는 1개여야 합니다." }
@@ -136,7 +139,10 @@ class QuizControllerTest {
             .andDo(MockMvcResultHandlers.print())
 
         val quizDocQueryForList = jdbcTemplate.queryForList("SELECT * FROM QUIZ_DOC")
-        val quizPageQueryForList = jdbcTemplate.queryForList("SELECT * FROM QUIZ_PAGE WHERE quiz_id = ?", quizDocQueryForList.get(0)["quiz_id"])
+        val quizPageQueryForList = jdbcTemplate.queryForList(
+            "SELECT * FROM QUIZ_PAGE WHERE quiz_id = ?",
+            quizDocQueryForList.get(0)["quiz_id"]
+        )
 
         assert(quizDocQueryForList.size == 1) { "전체 퀴즈 문서 개수는 1개여야 합니다." }
         assert(quizPageQueryForList.size == 2) { "해당 퀴즈 문서의 퀴즈 페이지는 2개여야 합니다." }
@@ -175,21 +181,152 @@ class QuizControllerTest {
     // 모든 문제집 조회
     // api/quiz?type=all
     // api/quiz?type=home
+
     @Test
     @DisplayName("모든_문제집_조회_home_200")
     fun 모든_문제집_조회_home_200() {
 
+        // given
+        // 노트 문서 7개 생성
+        val noteIds = mutableListOf<Long>()
+        repeat(7) {
+            val createOneNoteDto = createOneNoteDto()
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/sum-note")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createOneNoteDto))
+            ).andExpect(status().isCreated).andReturn()
+
+
+            // 가장 최근에 생성된 noteId 값 가져오기
+            val createdNoteId = jdbcTemplate.queryForObject(
+                "SELECT note_id FROM NOTE_DOCS ORDER BY created_at DESC LIMIT 1", Long::class.java
+            )
+            noteIds.add(createdNoteId!!)
+        }
+
+        // 해당 노트 문서로 퀴즈 문서 7개 생성
+        noteIds.forEach { noteId ->
+            val createOneQuizDto = createOneQuizDto(noteId)
+            mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/quiz")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createOneQuizDto))
+            ).andExpect(status().isCreated)
+        }
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/quiz")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("type", "home")
+        )
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data", Matchers.hasSize<Any>(5)))
+            .andDo(MockMvcResultHandlers.print())
     }
 
     @Test
     @DisplayName("모든_문제집_조회_all_200")
     fun 모든_문제집_조회_all_200() {
 
+        // given
+        // 노트 문서 7개 생성
+        val noteIds = mutableListOf<Long>()
+        repeat(7) {
+            val createOneNoteDto = createOneNoteDto()
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/sum-note")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createOneNoteDto))
+            ).andExpect(status().isCreated).andReturn()
+
+
+            // 가장 최근에 생성된 noteId 값 가져오기
+            val createdNoteId = jdbcTemplate.queryForObject(
+                "SELECT note_id FROM NOTE_DOCS ORDER BY created_at DESC LIMIT 1", Long::class.java
+            )
+            noteIds.add(createdNoteId!!)
+        }
+
+        // 해당 노트 문서로 퀴즈 문서 7개 생성
+        noteIds.forEach { noteId ->
+            val createOneQuizDto = createOneQuizDto(noteId)
+            mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/quiz")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createOneQuizDto))
+            ).andExpect(status().isCreated)
+        }
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/quiz")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("type", "all")
+        )
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data", Matchers.hasSize<Any>(7)))
+            .andDo(MockMvcResultHandlers.print())
+
     }
 
     @Test
     @DisplayName("모든_문제집_조회_home_401")
     fun 모든_문제집_조회_home_401() {
+
+        // given
+        // 노트 문서 7개 생성
+        val noteIds = mutableListOf<Long>()
+        repeat(7) {
+            val createOneNoteDto = createOneNoteDto()
+            val result = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/sum-note")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createOneNoteDto))
+            ).andExpect(status().isCreated).andReturn()
+
+
+            // 가장 최근에 생성된 noteId 값 가져오기
+            val createdNoteId = jdbcTemplate.queryForObject(
+                "SELECT note_id FROM NOTE_DOCS ORDER BY created_at DESC LIMIT 1", Long::class.java
+            )
+            noteIds.add(createdNoteId!!)
+        }
+
+        // 해당 노트 문서로 퀴즈 문서 7개 생성
+        noteIds.forEach { noteId ->
+            val createOneQuizDto = createOneQuizDto(noteId)
+            mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/quiz")
+                    .header("Authorization", authorizationHeader)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createOneQuizDto))
+            ).andExpect(status().isCreated)
+        }
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/quiz")
+                .header("Authorization", authorizationHeader + "x")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("type", "all")
+        )
+
+        resultActions
+            .andExpect(status().isUnauthorized)
+            .andDo(MockMvcResultHandlers.print())
 
     }
 
@@ -205,6 +342,34 @@ class QuizControllerTest {
     @DisplayName("특정_문제집_모든_퀴즈_401")
     fun 특정_문제집_모든_퀴즈_401() {
 
+    }
+
+    private fun createOneQuizDto(): CreateQuizDto {
+
+        val quizPages = listOf(
+            CreateQuizDto.QuizInfo(
+                question = "태양에 가장 가까운 행성은 무엇인가요?",
+                selection = listOf("1.수성", "2.금성", "3.지구", "4.화성"),
+                answer = "1",
+                commentary = "태양에 가장 가까운 행성은 '수성'입니다. 따라서 정답은 1번입니다."
+            )
+        )
+
+        return CreateQuizDto(createdNoteId.toLong(), "생성된 퀴즈 노트입니다.", quizPages)
+    }
+
+    private fun createOneQuizDto(noteId: Long): CreateQuizDto {
+
+        val quizPages = listOf(
+            CreateQuizDto.QuizInfo(
+                question = "태양에 가장 가까운 행성은 무엇인가요?",
+                selection = listOf("1.수성", "2.금성", "3.지구", "4.화성"),
+                answer = "1",
+                commentary = "태양에 가장 가까운 행성은 '수성'입니다. 따라서 정답은 1번입니다."
+            )
+        )
+
+        return CreateQuizDto(noteId, "생성된 퀴즈 노트입니다.", quizPages)
     }
 
     private fun createOneNoteDto(): CreateNoteDto {
@@ -226,20 +391,6 @@ class QuizControllerTest {
         )
 
         return CreateNoteDto(noteInfo, notePages)
-    }
-
-    private fun createOneQuizDto(): CreateQuizDto {
-
-        val quizPages = listOf(
-            CreateQuizDto.QuizInfo(
-                question = "태양에 가장 가까운 행성은 무엇인가요?",
-                selection = listOf("1.수성", "2.금성", "3.지구", "4.화성"),
-                answer = "1",
-                commentary = "태양에 가장 가까운 행성은 '수성'입니다. 따라서 정답은 1번입니다."
-            )
-        )
-
-        return CreateQuizDto(createdNoteId.toLong(), "생성된 퀴즈 노트입니다.", quizPages)
     }
 
     private fun clearDatabase() {

@@ -674,7 +674,41 @@ class NoteControllerTest {
 
 
     // 노트 삭제
+    @Test
+    @DisplayName("노트_삭제_200")
+    fun 노트_삭제_200() {
 
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.delete("/api/sum-note/{noteId}", noteId)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isOk)
+            .andDo(MockMvcResultHandlers.print())
+
+        val noteDocsQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val notePageQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+
+        assert(noteDocsQueryForList.isEmpty()) { "노트는 존재하지 않아야 합니다." }
+        assert(notePageQueryForList.isEmpty()) { "노트 페이지는 존재하지 않아야 합니다." }
+    }
 
     // 노트/노트페이지 객체 생성 - 개수 지정
     private fun createNoteDtoWithNum(numOfNotes: Int): List<CreateNoteDto> {
@@ -700,6 +734,117 @@ class NoteControllerTest {
             notes.add(CreateNoteDto(note = noteInfo, notePages = notePages))
         }
         return notes
+    }
+
+    @Test
+    @DisplayName("노트_삭제_401")
+    fun 노트_삭제_401() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.delete("/api/sum-note/{noteId}", noteId)
+                .header("Authorization", "authorizationHeader" + "x")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isUnauthorized)
+            .andDo(MockMvcResultHandlers.print())
+
+        val noteDocsQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val notePageQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+
+        assert(noteDocsQueryForList.count() == 1) { "노트는 1개 존재해야 합니다." }
+        assert(notePageQueryForList.count() == 3) { "노트 페이지는 3개 존재해야 합니다." }
+    }
+
+    @Test
+    @DisplayName("노트_삭제_403")
+    fun 노트_삭제_403() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        createTmpUser()
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.delete("/api/sum-note/{noteId}", noteId)
+                .header("Authorization", tmpAuthorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isForbidden)
+            .andDo(MockMvcResultHandlers.print())
+
+        val noteDocsQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val notePageQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+
+        assert(noteDocsQueryForList.count() == 1) { "노트는 1개 존재해야 합니다." }
+        assert(notePageQueryForList.count() == 3) { "노트 페이지는 3개 존재해야 합니다." }
+    }
+
+    @Test
+    @DisplayName("노트_삭제_404")
+    fun 노트_삭제_404() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.delete("/api/sum-note/{noteId}", noteId.toString().toInt() + 1)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isNotFound)
+            .andDo(MockMvcResultHandlers.print())
+
+        val noteDocsQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val notePageQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+
+        assert(noteDocsQueryForList.count() == 1) { "노트는 1개 존재해야 합니다." }
+        assert(notePageQueryForList.count() == 3) { "노트 페이지는 3개 존재해야 합니다." }
     }
 
     // 노트/노트페이지 객체 생성 - 1개만

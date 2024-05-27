@@ -116,7 +116,7 @@ class NoteControllerTest {
         // when
         val resultActions = mockMvc.perform(
             MockMvcRequestBuilders.post("/api/sum-note")
-                .header("Authorization", "x$authorizationHeader")
+                .header("Authorization", "authorizationHeader" + "x")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createNoteDto))
         )
@@ -211,7 +211,7 @@ class NoteControllerTest {
         // when
         val resultActions = mockMvc.perform(
             MockMvcRequestBuilders.get("/api/sum-note")
-                .header("Authorization", "x$authorizationHeader")
+                .header("Authorization", "authorizationHeader" + "x")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("type", "home")
         )
@@ -281,7 +281,7 @@ class NoteControllerTest {
 
         val resultActions = mockMvc.perform(
             MockMvcRequestBuilders.get("/api/sum-note/{noteId}", noteId)
-                .header("Authorization", "x$authorizationHeader")
+                .header("Authorization", "authorizationHeader" + "x")
                 .contentType(MediaType.APPLICATION_JSON)
         )
 
@@ -421,7 +421,7 @@ class NoteControllerTest {
 
         val resultActions = mockMvc.perform(
             MockMvcRequestBuilders.put("/api/sum-note/{noteId}/title", noteId.toString())
-                .header("Authorization", "x$authorizationHeader")
+                .header("Authorization", "authorizationHeader" + "x")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(changeTitleDto))
         )

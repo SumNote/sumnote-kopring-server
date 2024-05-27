@@ -3,6 +3,7 @@ package com.capston.sumnote.note.controller
 import com.capston.sumnote.domain.Member
 import com.capston.sumnote.member.dto.LoginDto
 import com.capston.sumnote.member.repository.MemberRepository
+import com.capston.sumnote.note.dto.AddNotePageDto
 import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.note.dto.CreateNoteDto
 import com.capston.sumnote.note.repository.NotePageRepository
@@ -395,7 +396,7 @@ class NoteControllerTest {
         val changedData = changedQueryForList.get(0)
         val changedTitle = changedData["title"]
 
-        assertEquals("노트 제목 변경 테스트입니다.", changedTitle)
+        assertEquals("노트 제목 변경 테스트입니다.", changedTitle) { "노트 제목은 바뀌어야 합니다." }
     }
 
     @Test
@@ -435,7 +436,7 @@ class NoteControllerTest {
         val changedData = changedQueryForList.get(0)
         val changedTitle = changedData["title"]
 
-        assertEquals("노트 제목입니다.", changedTitle)
+        assertEquals("노트 제목입니다.", changedTitle) { "노트 제목은 바뀌지 않아야 합니다."}
     }
 
     @Test
@@ -477,7 +478,7 @@ class NoteControllerTest {
         val changedData = changedQueryForList.get(0)
         val changedTitle = changedData["title"]
 
-        assertEquals("노트 제목입니다.", changedTitle)
+        assertEquals("노트 제목입니다.", changedTitle) { "노트 제목은 바뀌지 않아야 합니다."}
     }
 
     @Test
@@ -517,10 +518,159 @@ class NoteControllerTest {
         val changedData = changedQueryForList.get(0)
         val changedTitle = changedData["title"]
 
-        assertEquals("노트 제목입니다.", changedTitle)
+        assertEquals("노트 제목입니다.", changedTitle) { "노트 제목은 바뀌지 않아야 합니다." }
     }
 
     // 특정 노트에 페이지 추가
+    @Test
+    @DisplayName("특정_노트에_페이지_추가_200")
+    fun 특정_노트에_페이지_추가_200() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        // when
+        val createOneNotePageDto = createOneNotePageDto()
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/add", noteId)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNotePageDto))
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isOk)
+            .andDo(MockMvcResultHandlers.print())
+
+        val updatedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+        val count = updatedQueryForList.count()
+        assertEquals(4, count) { "노트의 페이지는 4개여야 합니다." }
+
+    }
+
+    @Test
+    @DisplayName("특정_노트에_페이지_추가_401")
+    fun 특정_노트에_페이지_추가_401() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        // when
+        val createOneNotePageDto = createOneNotePageDto()
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/add", noteId)
+                .header("Authorization", authorizationHeader + "x")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNotePageDto))
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isUnauthorized)
+            .andDo(MockMvcResultHandlers.print())
+
+        val updatedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+        val count = updatedQueryForList.count()
+        assertEquals(3, count) { "노트의 페이지는 3개여야 합니다." }
+
+    }
+
+    @Test
+    @DisplayName("특정_노트에_페이지_추가_403")
+    fun 특정_노트에_페이지_추가_403() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        createTmpUser()
+
+        // when
+        val createOneNotePageDto = createOneNotePageDto()
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/add", noteId)
+                .header("Authorization", tmpAuthorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNotePageDto))
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isForbidden)
+            .andDo(MockMvcResultHandlers.print())
+
+        val updatedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+        val count = updatedQueryForList.count()
+        assertEquals(3, count) { "노트의 페이지는 3개여야 합니다." }
+
+    }
+
+    @Test
+    @DisplayName("특정_노트에_페이지_추가_404")
+    fun 특정_노트에_페이지_추가_404() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        // when
+        val createOneNotePageDto = createOneNotePageDto()
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/add", noteId.toString().toInt() + 1)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNotePageDto))
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isNotFound)
+            .andDo(MockMvcResultHandlers.print())
+
+        val updatedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_PAGES")
+        val count = updatedQueryForList.count()
+        assertEquals(3, count) { "노트의 페이지는 3개여야 합니다." }
+
+    }
 
 
     // 노트 삭제
@@ -572,6 +722,10 @@ class NoteControllerTest {
 
         return CreateNoteDto(noteInfo, notePages)
 
+    }
+
+    private fun createOneNotePageDto(): AddNotePageDto {
+        return AddNotePageDto(title = "추가된 노트 페이지 제목", content = "추가된 노트 페이지 내용")
     }
 
     private fun createTmpUser() {

@@ -47,6 +47,7 @@ class NoteControllerTest {
     lateinit var notePageRepository: NotePageRepository
 
     lateinit var authorizationHeader: String
+    lateinit var tmpAuthorizationHeader: String
 
     @BeforeEach
     fun setUp(){
@@ -221,6 +222,137 @@ class NoteControllerTest {
 
 
     // 특정 노트 모든 페이지 조회
+    @Test
+    @DisplayName("특정_노트_모든_페이지_조회_200")
+    fun 특정_노트_모든_페이지_조회_200() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        // when
+
+        // DB 에 존재하는 하나의 noteId 찾기
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val noteData = queryForList.get(0)
+        val noteId = noteData["note_id"]
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note/{noteId}", noteId)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.notePages", Matchers.hasSize<Any>(3)))
+            .andDo(MockMvcResultHandlers.print())
+
+    }
+
+    @Test
+    @DisplayName("특정_노트_모든_페이지_조회_401")
+    fun 특정_노트_모든_페이지_조회_401() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note/{noteId}", noteId)
+                .header("Authorization", "x$authorizationHeader")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isUnauthorized)
+            .andDo(MockMvcResultHandlers.print())
+
+    }
+
+    @Test
+    @DisplayName("특정_노트_모든_페이지_조회_403")
+    fun 특정_노트_모든_페이지_조회_403() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        ).andDo(MockMvcResultHandlers.print())
+
+        createTmpUser()
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val noteData = queryForList.get(0)
+        val noteId = noteData["note_id"]
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note/{noteId}", noteId)
+                .header("Authorization", tmpAuthorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isForbidden)
+            .andDo(MockMvcResultHandlers.print())
+
+    }
+
+    @Test
+    @DisplayName("특정_노트_모든_페이지_조회_404")
+    fun 특정_노트_모든_페이지_조회_404() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val noteData = queryForList.get(0)
+        val noteId = noteData["note_id"]
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/sum-note/{noteId}", noteId.toString().toInt() + 1)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isNotFound)
+            .andDo(MockMvcResultHandlers.print())
+
+    }
 
 
     // 노트 이름 변경
@@ -278,6 +410,26 @@ class NoteControllerTest {
 
         return CreateNoteDto(noteInfo, notePages)
 
+    }
+
+    private fun createTmpUser() {
+
+        // 데이터베이스에 넣을 Member 생성
+        val member = Member(email = "test2@example.com", name = "테스트 사용자2")
+
+        // 데이터베이스에 저장
+        memberRepository.save(member)
+
+        // 로그인
+        val loginDto = LoginDto.Req("test2@example.com", "테스트 사용자2")
+        val loginResultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/member/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto))
+        )
+
+        // 이후 모든 요청에 들어갈 authorizationHeader 값 얻기
+        tmpAuthorizationHeader = loginResultActions.andReturn().response.getHeader("Authorization").toString()
     }
 
     private fun clearDatabase() {

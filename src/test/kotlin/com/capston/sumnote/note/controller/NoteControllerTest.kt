@@ -3,11 +3,13 @@ package com.capston.sumnote.note.controller
 import com.capston.sumnote.domain.Member
 import com.capston.sumnote.member.dto.LoginDto
 import com.capston.sumnote.member.repository.MemberRepository
+import com.capston.sumnote.note.dto.ChangeTitleDto
 import com.capston.sumnote.note.dto.CreateNoteDto
 import com.capston.sumnote.note.repository.NotePageRepository
 import com.capston.sumnote.note.repository.NoteRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.Matchers
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -356,7 +358,167 @@ class NoteControllerTest {
 
 
     // 노트 이름 변경
+    @Test
+    @DisplayName("노트_이름_변경_200")
+    fun 노트_이름_변경_200() {
 
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        val changeTitleDto = ChangeTitleDto("노트 제목 변경 테스트입니다.")
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/title", noteId.toString())
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeTitleDto))
+        )
+
+        // then
+        resultActions // 응답 확인
+            .andExpect(status().isOk)
+            .andDo(MockMvcResultHandlers.print())
+
+        // 노트 제목 변경 확인
+        val changedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS WHERE note_id = ?", noteId)
+        val changedData = changedQueryForList.get(0)
+        val changedTitle = changedData["title"]
+
+        assertEquals("노트 제목 변경 테스트입니다.", changedTitle)
+    }
+
+    @Test
+    @DisplayName("노트_이름_변경_401")
+    fun 노트_이름_변경_401() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        val changeTitleDto = ChangeTitleDto("노트 제목 변경 테스트입니다.")
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/title", noteId.toString())
+                .header("Authorization", "x$authorizationHeader")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeTitleDto))
+        )
+
+        // then
+        resultActions // 응답 확인
+            .andExpect(status().isUnauthorized)
+            .andDo(MockMvcResultHandlers.print())
+
+        // 노트 제목 변경 확인
+        val changedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS WHERE note_id = ?", noteId)
+        val changedData = changedQueryForList.get(0)
+        val changedTitle = changedData["title"]
+
+        assertEquals("노트 제목입니다.", changedTitle)
+    }
+
+    @Test
+    @DisplayName("노트_이름_변경_403")
+    fun 노트_이름_변경_403() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        createTmpUser()
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        val changeTitleDto = ChangeTitleDto("노트 제목 변경 테스트입니다.")
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/title", noteId.toString())
+                .header("Authorization", tmpAuthorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeTitleDto))
+        )
+
+        // then
+        resultActions // 응답 확인
+            .andExpect(status().isForbidden)
+            .andDo(MockMvcResultHandlers.print())
+
+        // 노트 제목 변경 확인
+        val changedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS WHERE note_id = ?", noteId)
+        val changedData = changedQueryForList.get(0)
+        val changedTitle = changedData["title"]
+
+        assertEquals("노트 제목입니다.", changedTitle)
+    }
+
+    @Test
+    @DisplayName("노트_이름_변경_404")
+    fun 노트_이름_변경_404() {
+
+        // given
+        val createOneNoteDto = createOneNoteDto()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/sum-note")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneNoteDto))
+        )
+
+        // when
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS")
+        val data = queryForList.get(0)
+        val noteId = data["note_id"]
+
+        val changeTitleDto = ChangeTitleDto("노트 제목 변경 테스트입니다.")
+
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.put("/api/sum-note/{noteId}/title", noteId.toString().toInt() + 1)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeTitleDto))
+        )
+
+        // then
+        resultActions // 응답 확인
+            .andExpect(status().isNotFound)
+            .andDo(MockMvcResultHandlers.print())
+
+        // 노트 제목 변경 확인
+        val changedQueryForList = jdbcTemplate.queryForList("SELECT * FROM NOTE_DOCS WHERE note_id = ?", noteId)
+        val changedData = changedQueryForList.get(0)
+        val changedTitle = changedData["title"]
+
+        assertEquals("노트 제목입니다.", changedTitle)
+    }
 
     // 특정 노트에 페이지 추가
 

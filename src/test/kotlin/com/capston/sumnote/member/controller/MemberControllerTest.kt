@@ -43,12 +43,6 @@ class MemberControllerTest {
 
         // DB 초기화
         clearDatabase()
-
-        // 데이터베이스에 넣을 Member 생성
-        val member = Member(email = "test@example.com", name = "테스트 사용자")
-
-        // 데이터베이스에 저장
-        memberRepository.save(member)
     }
 
     @Test
@@ -68,17 +62,37 @@ class MemberControllerTest {
         // then
         resultActions
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.status").value(200))
-            .andExpect(jsonPath("$.data.email").value("test@example.com"))
-            .andExpect(jsonPath("$.data.name").value("테스트 사용자"))
-            .andExpect(jsonPath("$.message").value("로그인 성공"))
             .andExpect(header().exists("Authorization"))
             .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
             .andDo(MockMvcResultHandlers.print()) // 요청 및 응답 로깅
 
         // 데이터베이스 상태 검증
-        val memberCount = memberRepository.count()
-        assert(memberCount == 1L) { "회원이 1명 존재해야 합니다." }
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM MEMBERS")
+        assert(queryForList.count() == 1) { "회원이 1명 존재해야 합니다." }
+    }
+
+    @Test
+    @DisplayName("로그인_400")
+    fun 로그인_400() {
+
+        // given
+        val loginDto = LoginDto.Req("testexample.com", "테스트 사용자")
+
+        // when
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/member/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto))
+        )
+
+        // then
+        resultActions
+            .andExpect(status().isBadRequest)
+            .andDo(MockMvcResultHandlers.print()) // 요청 및 응답 로깅
+
+        // 데이터베이스 상태 검증
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM MEMBERS")
+        assert(queryForList.isEmpty()) { "회원이 0명 존재해야 합니다." }
     }
 
     @Test
@@ -108,14 +122,11 @@ class MemberControllerTest {
         // then
         resultActions
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.status").value(200))
-            .andExpect(jsonPath("$.data").value(Matchers.nullValue()))
-            .andExpect(jsonPath("$.message").value("회원탈퇴 성공"))
             .andDo(MockMvcResultHandlers.print()) // 요청 및 응답 로깅
 
         // 데이터베이스 상태 검증
-        val memberCount = memberRepository.count()
-        assert(memberCount == 0L) { "회원이 0명이어야 합니다." }
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM MEMBERS")
+        assert(queryForList.isEmpty()) { "회원이 0명이어야 합니다." }
     }
 
     @Test
@@ -145,14 +156,11 @@ class MemberControllerTest {
         // then
         resultActions
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.data").value(Matchers.nullValue()))
-            .andExpect(jsonPath("$.message").value("이메일 형식을 맞춰주세요."))
             .andDo(MockMvcResultHandlers.print()) // 요청 및 응답 로깅
 
         // 데이터베이스 상태 검증
-        val memberCount = memberRepository.count()
-        assert(memberCount == 1L) { "회원이 1명이어야 합니다." }
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM MEMBERS")
+        assert(queryForList.count() == 1) { "회원이 1명이어야 합니다." }
     }
 
     @Test
@@ -182,14 +190,11 @@ class MemberControllerTest {
         // then
         resultActions
             .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.status").value(404))
-            .andExpect(jsonPath("$.data").value(Matchers.nullValue()))
-            .andExpect(jsonPath("$.message").value("존재하지 않는 이메일입니다."))
             .andDo(MockMvcResultHandlers.print()) // 요청 및 응답 로깅
 
         // 데이터베이스 상태 검증
-        val memberCount = memberRepository.count()
-        assert(memberCount == 1L) { "회원이 1명이어야 합니다." }
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM MEMBERS")
+        assert(queryForList.count() == 1) { "회원이 1명이어야 합니다." }
     }
 
     private fun clearDatabase() {

@@ -73,8 +73,14 @@ class QuizControllerTest {
     // 문제집 생성
     // api/quiz
     @Test
-    @DisplayName("문제집_생성_201")
+    @DisplayName("문제집_새로_생성_201")
     fun 문제집_생성_201() {
+
+    }
+
+    @Test
+    @DisplayName("문제집_기존꺼에_생성_201")
+    fun 문제집_기존꺼에_201() {
 
     }
 

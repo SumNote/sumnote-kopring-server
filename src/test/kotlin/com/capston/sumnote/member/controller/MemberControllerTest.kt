@@ -1,11 +1,7 @@
 package com.capston.sumnote.member.controller
 
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import com.capston.sumnote.domain.Member
 import com.capston.sumnote.member.dto.LoginDto
-import com.capston.sumnote.member.repository.MemberRepository
-import com.capston.sumnote.member.service.MemberServiceImpl
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
@@ -34,9 +30,6 @@ class MemberControllerTest {
 
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
-
-    @Autowired
-    private lateinit var memberRepository: MemberRepository
 
     @BeforeEach
     fun setUp() {

@@ -16,6 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.RequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -104,7 +105,7 @@ class QuizControllerTest {
         )
 
         assert(quizDocQueryForList.size == 1) { "전체 퀴즈 문서 개수는 1개여야 합니다." }
-        assert(quizPageQueryForList.size == 1) { "해당 퀴즈 문서의 퀴즈 페이지는 1개여야 합니다." }
+        assert(quizPageQueryForList.size == 2) { "해당 퀴즈 문서의 퀴즈 페이지는 2개여야 합니다." }
 
     }
 
@@ -116,7 +117,7 @@ class QuizControllerTest {
         // noteId로 문제집 생성 준비
         val createOneQuizDto = createOneQuizDto()
 
-        // 문제집 1개 미리 생성
+        // 문제집 1개 미리 생성 - 퀴즈는 2개 생성
         mockMvc.perform(
             MockMvcRequestBuilders.post("/api/quiz")
                 .header("Authorization", authorizationHeader)
@@ -125,7 +126,7 @@ class QuizControllerTest {
         )
 
         // when
-        // 문제집 생성 요청 보내기 - 이미 생성되어 있으므로 퀴즈 문서는 1개이고 퀴즈 페이지는 2개
+        // 문제집 생성 요청 보내기 - 이미 생성되어 있으므로 퀴즈 문서는 1개이고 퀴즈 페이지는 4개
         val resultActions = mockMvc.perform(
             MockMvcRequestBuilders.post("/api/quiz")
                 .header("Authorization", authorizationHeader)
@@ -145,7 +146,7 @@ class QuizControllerTest {
         )
 
         assert(quizDocQueryForList.size == 1) { "전체 퀴즈 문서 개수는 1개여야 합니다." }
-        assert(quizPageQueryForList.size == 2) { "해당 퀴즈 문서의 퀴즈 페이지는 2개여야 합니다." }
+        assert(quizPageQueryForList.size == 4) { "해당 퀴즈 문서의 퀴즈 페이지는 4개여야 합니다." }
 
     }
 
@@ -336,19 +337,85 @@ class QuizControllerTest {
     @DisplayName("특정_문제집_모든_퀴즈_200")
     fun 특정_문제집_모든_퀴즈_200() {
 
+        // given
+        // 저장된 노트 id로 퀴즈 저장
+        val createOneQuizDto = createOneQuizDto()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/quiz")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneQuizDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM QUIZ_DOC")
+        val data = queryForList.get(0)
+        val createdQuizId = data["quiz_id"]
+
+        // when
+        // 요청 보내기
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/quiz/{quizId}", createdQuizId)
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        // 응답값 OK 검증
+        // 퀴즈 페이지는 2개
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.quiz", Matchers.hasSize<Any>(2)))
+            .andDo(MockMvcResultHandlers.print())
     }
 
     @Test
     @DisplayName("특정_문제집_모든_퀴즈_401")
     fun 특정_문제집_모든_퀴즈_401() {
 
+        // given
+        // 저장된 노트 id로 퀴즈 저장
+        val createOneQuizDto = createOneQuizDto()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/quiz")
+                .header("Authorization", authorizationHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createOneQuizDto))
+        )
+
+        val queryForList = jdbcTemplate.queryForList("SELECT * FROM QUIZ_DOC")
+        val data = queryForList.get(0)
+        val createdQuizId = data["quiz_id"]
+
+        // when
+        // 요청 보내기
+        val resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/quiz/{quizId}", createdQuizId)
+                .header("Authorization", authorizationHeader + "x")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+
+        // then
+        // 응답값 OK 검증
+        resultActions
+            .andExpect(status().isUnauthorized)
+            .andExpect(jsonPath("$.data").doesNotExist())
+            .andDo(MockMvcResultHandlers.print())
     }
 
+    // 퀴즈 문서는 1개, 퀴즈 페이지는 2개 생성됨
     private fun createOneQuizDto(): CreateQuizDto {
 
         val quizPages = listOf(
             CreateQuizDto.QuizInfo(
                 question = "태양에 가장 가까운 행성은 무엇인가요?",
+                selection = listOf("1.수성", "2.금성", "3.지구", "4.화성"),
+                answer = "1",
+                commentary = "태양에 가장 가까운 행성은 '수성'입니다. 따라서 정답은 1번입니다."
+            ),
+            CreateQuizDto.QuizInfo(
+                question = "태양에 가장 가까운 행성은 무엇인가요?2",
                 selection = listOf("1.수성", "2.금성", "3.지구", "4.화성"),
                 answer = "1",
                 commentary = "태양에 가장 가까운 행성은 '수성'입니다. 따라서 정답은 1번입니다."

@@ -56,6 +56,10 @@ dependencies {
 		exclude(group = "junit", module = "junit")  // JUnit4 의존성 제외
 		exclude(group = "org.mockito", module = "mockito-core")  // Mockito 1.x 제외
 	}
+
+	// Mockito
+	testImplementation("org.mockito:mockito-core:4.0.0")
+	testImplementation("org.mockito:mockito-junit-jupiter:4.0.0")
 }
 
 tasks.withType<KotlinCompile> {

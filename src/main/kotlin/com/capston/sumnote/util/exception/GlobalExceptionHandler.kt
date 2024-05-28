@@ -51,8 +51,9 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomValidationException::class)
     fun handleCustomValidationException(e: CustomValidationException): ResponseEntity<CustomApiResponse<*>> {
-        val response = CustomApiResponse.createFailWithoutData(HttpStatus.BAD_REQUEST.value(), e.message ?: "유효하지 않은 요청입니다.")
-        return ResponseEntity(response, HttpStatus.BAD_REQUEST)
+        val status = HttpStatus.valueOf(e.statusCode)
+        val response = CustomApiResponse.createFailWithoutData(status.value(), e.message ?: "유효하지 않은 요청입니다.")
+        return ResponseEntity(response, status)
     }
 
 }
